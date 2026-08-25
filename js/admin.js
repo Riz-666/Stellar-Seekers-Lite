@@ -19,7 +19,6 @@ loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const pwd = loginForm.password.value;
   
-  // Loading state
   loginBtn.disabled = true;
   loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memverifikasi...';
   
@@ -31,10 +30,10 @@ loginForm.addEventListener('submit', async (e) => {
       adminPassword = pwd;
       loginView.style.display = 'none';
       dashboardView.style.display = 'block';
-      alertBox.innerHTML = ''; // Clear alert
+      alertBox.innerHTML = '';
     } else {
       showAlert('error', '❌ Password salah! Silakan coba lagi.');
-      loginForm.password.value = ''; // Reset input
+      loginForm.password.value = '';
     }
   } catch (err) {
     showAlert('error', '❌ Koneksi ke server gagal.');
@@ -100,7 +99,7 @@ exportXlsxBtn.addEventListener('click', async () => {
     'Main Job': m.mainJob,
     'Buff Land': m.buffLand || '',
     'Kode Land': m.kodeLand || '',
-    'WhatsApp': `'${m.whatsapp}`, // Tambah kutip biar gak jadi format angka di Excel
+    'WhatsApp': `'${m.whatsapp}`, // Trik agar angka 0 di depan tidak hilang di Excel
     'Status': m.status,
     'Alasan Nonaktif': m.alasanNonaktif || '',
     'Tanggal Bergabung': formatDate(m.tanggal)
@@ -110,7 +109,6 @@ exportXlsxBtn.addEventListener('click', async () => {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Members');
   
-  // Auto-width kolom
   const colWidths = Object.keys(rows[0]).map(key => ({
     wch: Math.max(key.length, ...rows.map(r => String(r[key] || '').length)) + 2
   }));
@@ -119,7 +117,6 @@ exportXlsxBtn.addEventListener('click', async () => {
   const filename = `StellarSeekers_Members_${new Date().toISOString().slice(0,10)}.xlsx`;
   XLSX.writeFile(wb, filename);
   
-  // Reset button
   exportXlsxBtn.disabled = false;
   exportXlsxBtn.innerHTML = originalText;
 });
@@ -156,7 +153,6 @@ exportCsvBtn.addEventListener('click', async () => {
   a.click();
   URL.revokeObjectURL(url);
   
-  // Reset button
   exportCsvBtn.disabled = false;
   exportCsvBtn.innerHTML = originalText;
 });

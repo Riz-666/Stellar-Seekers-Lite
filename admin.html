@@ -44,17 +44,18 @@
   <section class="section-padding d-flex align-items-center" style="min-height: 100vh; background: linear-gradient(135deg, var(--gray-50) 0%, white 100%); padding-top: 120px;">
     <div class="container">
       <div class="row justify-content-center">
-        <div class="col-lg-7">
+        <div class="col-lg-6">
           <div class="form-card text-center">
             
+            <!-- ICON (Sudah diperbaiki tag penutupnya) -->
             <div class="mb-4">
-              <i class="bi bi-shield-lock-fill" style="font-size: 3rem; color: var(--blue-dark);"></div>
+              <i class="bi bi-shield-lock-fill" style="font-size: 3.5rem; color: var(--blue-dark);"></i>
             </div>
             
             <h2 class="fw-bold mb-2" style="color: var(--blue-dark);">Admin Panel</h2>
             <p class="text-muted mb-4">Area terbatas. Masukkan password untuk mengakses dan mengekspor data lengkap member (termasuk WhatsApp).</p>
             
-            <div id="alertBox" class="text-start"></div>
+            <div id="alertBox" class="text-start mb-3"></div>
             
             <!-- LOGIN VIEW -->
             <div id="loginView">
@@ -77,11 +78,12 @@
               </div>
               
               <div class="d-grid gap-3 mt-4">
-                <button class="btn btn-lg text-white" id="exportXlsxBtn" style="background: linear-gradient(135deg, #10b981, #059669); border: none; font-weight: 600;">
+                <!-- Tombol Export dengan !important agar tidak ketimpa Bootstrap -->
+                <button class="btn btn-lg text-white fw-semibold" id="exportXlsxBtn" style="background: linear-gradient(135deg, #10b981, #059669) !important; border: none;">
                   <i class="bi bi-file-earmark-excel-fill me-2"></i>Export ke Excel (.xlsx)
                 </button>
                 
-                <button class="btn btn-lg text-white" id="exportCsvBtn" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none; font-weight: 600;">
+                <button class="btn btn-lg text-white fw-semibold" id="exportCsvBtn" style="background: linear-gradient(135deg, #f59e0b, #d97706) !important; border: none;">
                   <i class="bi bi-file-earmark-spreadsheet-fill me-2"></i>Export ke CSV
                 </button>
                 
@@ -93,7 +95,7 @@
               </div>
               
               <div class="mt-4 p-3 rounded" style="background-color: var(--gray-50); border: 1px solid var(--gray-100);">
-                <p class="mb-0" style="color: var(--gray-500); font-size: 0.9rem;">
+                <p class="mb-0" style="color: var(--gray-500); font-size: 0.85rem;">
                   <i class="bi bi-lightbulb-fill text-warning me-2"></i>
                   <strong>Tips:</strong> File <strong>.xlsx</strong> bisa dibuka di Microsoft Excel, Google Sheets, atau LibreOffice. File <strong>.csv</strong> bisa dibuka di hampir semua aplikasi spreadsheet.
                 </p>
