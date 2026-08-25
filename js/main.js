@@ -68,14 +68,6 @@ function renderMembers() {
               <small class="text-muted">${escapeHtml(m.mainJob || '-')}</small>
             </div>
           </div>
-        <div class="member-card">
-          <div class="d-flex align-items-center gap-3 mb-4">
-            <div class="member-avatar">${initial}</div>
-            <div>
-              <h5 class="fw-bold mb-0" style="color: var(--blue-dark);">${escapeHtml(m.nickname)}</h5>
-              <small class="text-muted">${escapeHtml(m.mainJob || '-')}</small>
-            </div>
-          </div>
           <div class="d-flex flex-column gap-2 pt-3 border-top">
             <div class="d-flex justify-content-between">
               <span class="text-muted">Buff Land</span>
