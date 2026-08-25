@@ -5,13 +5,13 @@ const loadingState = document.getElementById('loadingState');
 const statusSelect = form.querySelector('[name="status"]');
 const alasanGroup = document.getElementById('alasanGroup');
 
+// Ambil ID member dari URL
 const params = new URLSearchParams(window.location.search);
 const memberId = params.get('id');
 
-// Helper buat alert yang kompatibel dengan Bootstrap
+// Fungsi Alert (Sama persis dengan daftar.js)
 function showAlert(type, message) {
-  const bsType = type === 'error' ? 'danger' : type; // Bootstrap pakai 'danger', bukan 'error'
-  alertBox.innerHTML = `<div class="alert alert-${bsType} fade show" role="alert">${message}</div>`;
+  alertBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
 }
 
 // Toggle alasan field
@@ -19,6 +19,7 @@ statusSelect.addEventListener('change', () => {
   alasanGroup.style.display = statusSelect.value === 'nonaktif' ? 'block' : 'none';
 });
 
+// Fungsi buat load data member saat halaman dibuka
 async function loadMember() {
   if (!memberId) {
     loadingState.innerHTML = `<div class="alert alert-danger">❌ Link tidak valid. ID member tidak ditemukan.</div>`;
@@ -35,6 +36,8 @@ async function loadMember() {
     }
     
     const m = result.data;
+    
+    // Isi form dengan data yang ada
     document.getElementById('memberId').value = m.id;
     form.nickname.value = m.nickname || '';
     form.mainJob.value = m.mainJob || '';
@@ -47,10 +50,9 @@ async function loadMember() {
     // Tampilkan field alasan kalau statusnya nonaktif
     alasanGroup.style.display = m.status === 'nonaktif' ? 'block' : 'none';
     
-    // Sembunyikan loading, tampilkan form dengan animasi
+    // Sembunyikan loading, tampilkan form
     loadingState.style.display = 'none';
     form.style.display = 'block';
-    form.classList.add('fade-in-up'); // Tambahin animasi muncul
     
   } catch (err) {
     console.error(err);
@@ -58,10 +60,11 @@ async function loadMember() {
   }
 }
 
+// Fungsi Submit Update
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Menyimpan...';
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menyimpan...';
   
   const formData = new FormData(form);
   const data = Object.fromEntries(formData.entries());
@@ -78,7 +81,7 @@ form.addEventListener('submit', async (e) => {
       showAlert('success', '✅ <strong>Berhasil!</strong> Data member lo udah diupdate.');
       window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll ke atas biar alert kebaca
       
-      // Opsional: Reset tombol setelah 2 detik
+      // Kembalikan tombol ke kondisi semula setelah 2 detik
       setTimeout(() => {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Simpan Perubahan';
