@@ -30,7 +30,13 @@ form.addEventListener('submit', async (e) => {
     const result = await res.json();
     
     if (result.success) {
-      showAlert('success', `✅ Pendaftaran berhasil! Simpan link pribadi lo buat update data nanti:<br><br><strong style="word-break:break-all;">${window.location.origin}/edit.html?id=${result.memberId}</strong>`);
+      // 🔥 TRIK AMPUH: Ambil base URL direktori saat ini secara otomatis
+      // Ini bakal otomatis nambahin nama repository kalau di GitHub Pages
+      const baseUrl = new URL('.', window.location.href).href;
+      const editLink = `${baseUrl}edit.html?id=${result.memberId}`;
+      
+      showAlert('success', `✅ Pendaftaran berhasil! Simpan link pribadi lo buat update data nanti:<br><br><strong style="word-break:break-all; color: var(--blue-dark);">${editLink}</strong>`);
+      
       form.reset();
       alasanGroup.style.display = 'none';
     } else {
