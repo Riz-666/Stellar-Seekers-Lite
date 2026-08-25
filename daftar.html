@@ -1,105 +1,132 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daftar Member — Stellar Seekers</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Member — Stellar Seekers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
 
     <!-- PAGE LOADER (Versi Stellar) -->
-  <div id="page-loader">
-    <div class="loader-orbit">
-      <div class="loader-core"></div>
-      <div class="loader-ring"><span class="loader-moon"></span></div>
-    </div>
-    <p class="loader-label">Stellar Seekers</p>
-  </div>
-
-   <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-3" href="index.html">
-        <div class="logo-placeholder">
-          <!-- 🔁 GANTI src INI DENGAN URL LOGO GUILD LO -->
-          <img src="https://via.placeholder.com/80x80/1e3a8a/ffffff?text=SS" alt="Logo Stellar Seekers">
+    <div id="page-loader">
+        <div class="loader-orbit">
+            <div class="loader-core"></div>
+            <div class="loader-ring"><span class="loader-moon"></span></div>
         </div>
-        <span>Stellar Seekers</span>
-      </a>
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto align-items-lg-center">
-          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-        </ul>
-      </div>
+        <p class="loader-label">Stellar Seekers</p>
     </div>
-  </nav>
 
-  <section class="section-padding d-flex align-items-center" style="min-height: 100vh; background: linear-gradient(135deg, var(--gray-50) 0%, white 100%); padding-top: 120px;">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-lg-8">
-          <div class="form-card">
-            <h2 class="fw-bold mb-2" style="color: var(--blue-dark);">Daftar Member Baru</h2>
-            <p class="text-muted mb-4">Isi data dirimu di bawah ini. Setelah submit, lo bakal dapet link pribadi buat update data nanti.</p>
-            
-            <div id="alertBox"></div>
-            
-            <form id="daftarForm">
-              <div class="mb-3">
-                <label class="form-label fw-semibold">Nickname <span class="text-danger">*</span></label>
-                <input type="text" name="nickname" class="form-control" required maxlength="50" placeholder="Contoh: ShadowKnight99">
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label fw-semibold">Main Job <span class="text-danger">*</span></label>
-                <input type="text" name="mainJob" class="form-control" required maxlength="50" placeholder="Contoh: Knuckle Dagger, Ktn Dagger, dsb.">
-              </div>
-              
-              <div class="row g-3 mb-3">
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Buff Land</label>
-                  <input type="text" name="buffLand" class="form-control" maxlength="50" placeholder="Opsional">
+    <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-3" href="index.html">
+                <div class="logo-placeholder">
+                    <!-- 🔁 GANTI src INI DENGAN URL LOGO GUILD LO -->
+                    <img src="https://via.placeholder.com/80x80/1e3a8a/ffffff?text=SS" alt="Logo Stellar Seekers">
                 </div>
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Kode Land</label>
-                  <input type="text" name="kodeLand" class="form-control" maxlength="30" placeholder="Opsional">
-                </div>
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label fw-semibold">Nomor WhatsApp <span class="text-danger">*</span></label>
-                <input type="tel" name="whatsapp" class="form-control" required pattern="[0-9+\-\s]{8,20}" placeholder="08xxxxxxxxxx">
-                <div class="form-text">⚠️ Nomor ini akan disembunyikan dari publik</div>
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
-                <select name="status" class="form-select" required>
-                  <option value="aktif">Aktif</option>
-                  <option value="nonaktif">Nonaktif</option>
-                </select>
-              </div>
-              
-              <div class="mb-4" id="alasanGroup" style="display:none;">
-                <label class="form-label fw-semibold">Alasan Nonaktif</label>
-                <textarea name="alasanNonaktif" class="form-control" maxlength="200" rows="3" placeholder="Ceritain alasan lo..."></textarea>
-              </div>
-              
-              <button type="submit" class="btn btn-primary-custom w-100 btn-lg" id="submitBtn">Daftar Sekarang</button>
-            </form>
-          </div>
+                <span>Stellar Seekers</span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                </ul>
+            </div>
         </div>
-      </div>
-    </div>
-  </section>
+    </nav>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/transition.js"></script>
-  <script src="js/daftar.js"></script>
+    <section class="section-padding d-flex align-items-center"
+        style="min-height: 100vh; background: linear-gradient(135deg, var(--gray-50) 0%, white 100%); padding-top: 120px;">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="form-card">
+                        <h2 class="fw-bold mb-2" style="color: var(--blue-dark);">Daftar Member Baru</h2>
+                        <p class="text-muted mb-4">Isi data dirimu di bawah ini. Setelah submit, lo bakal dapet link
+                            pribadi buat update data nanti.</p>
+
+                        <div id="alertBox"></div>
+
+                        <form id="daftarForm">
+                            
+                            <!-- Tambahkan ini DI ATAS field Nickname -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Jenis Akun <span
+                                        class="text-danger">*</span></label>
+                                <select name="jenisAkun" class="form-select" required>
+                                    <option value="utama">Akun Utama</option>
+                                    <option value="tuyul">Akun Tuyul / Second</option>
+                                </select>
+                                <div class="form-text">Pilih "Akun Tuyul" jika ini adalah akun kedua/alt kamu.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Nickname <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="nickname" class="form-control" required maxlength="50"
+                                    placeholder="Contoh: ShadowKnight99">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Main Job <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="mainJob" class="form-control" required maxlength="50"
+                                    placeholder="Contoh: Knuckle Dagger, Ktn Dagger, dsb.">
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Buff Land</label>
+                                    <input type="text" name="buffLand" class="form-control" maxlength="50"
+                                        placeholder="Opsional">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Kode Land</label>
+                                    <input type="text" name="kodeLand" class="form-control" maxlength="30"
+                                        placeholder="Opsional">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Nomor WhatsApp <span
+                                        class="text-danger">*</span></label>
+                                <input type="tel" name="whatsapp" class="form-control" required
+                                    pattern="[0-9+\-\s]{8,20}" placeholder="08xxxxxxxxxx">
+                                <div class="form-text">⚠️ Nomor ini akan disembunyikan dari publik</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Status <span class="text-danger">*</span></label>
+                                <select name="status" class="form-select" required>
+                                    <option value="aktif">Aktif</option>
+                                    <option value="nonaktif">Nonaktif</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-4" id="alasanGroup" style="display:none;">
+                                <label class="form-label fw-semibold">Alasan Nonaktif</label>
+                                <textarea name="alasanNonaktif" class="form-control" maxlength="200" rows="3"
+                                    placeholder="Ceritain alasan lo..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary-custom w-100 btn-lg" id="submitBtn">Daftar
+                                Sekarang</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/transition.js"></script>
+    <script src="js/daftar.js"></script>
 </body>
+
 </html>

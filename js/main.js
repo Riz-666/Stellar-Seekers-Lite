@@ -51,8 +51,23 @@ function renderMembers() {
     const statusClass = m.status === 'aktif' ? 'text-success bg-success-subtle' : 'text-danger bg-danger-subtle';
     const statusText = m.status === 'aktif' ? 'Aktif' : 'Nonaktif';
     
+    // Tambahkan badge khusus jika ini akun tuyul
+    const tuyulBadge = m.jenisAkun === 'tuyul' 
+      ? `<span class="badge bg-secondary ms-2" style="font-size: 0.7rem;"><i class="bi bi-controller"></i> Tuyul</span>` 
+      : '';
+
     return `
       <div class="col-md-6 col-lg-4 fade-in-up">
+        <div class="member-card">
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="member-avatar">${initial}</div>
+            <div>
+              <h5 class="fw-bold mb-0" style="color: var(--blue-dark);">
+                ${escapeHtml(m.nickname)} ${tuyulBadge}
+              </h5>
+              <small class="text-muted">${escapeHtml(m.mainJob || '-')}</small>
+            </div>
+          </div>
         <div class="member-card">
           <div class="d-flex align-items-center gap-3 mb-4">
             <div class="member-avatar">${initial}</div>
