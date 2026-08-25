@@ -30,7 +30,7 @@ form.addEventListener('submit', async (e) => {
     const result = await res.json();
     
     if (result.success) {
-      // 🔥 TRIK AMPUH: Ambil base URL direktori saat ini secara otomatis
+      // TRIK AMPUH: Ambil base URL direktori saat ini secara otomatis
       // Ini bakal otomatis nambahin nama repository kalau di GitHub Pages
       const baseUrl = new URL('.', window.location.href).href;
       const editLink = `${baseUrl}edit.html?id=${result.memberId}`;
