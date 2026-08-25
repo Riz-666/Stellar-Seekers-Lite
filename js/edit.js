@@ -8,17 +8,20 @@ const alasanGroup = document.getElementById('alasanGroup');
 const params = new URLSearchParams(window.location.search);
 const memberId = params.get('id');
 
+// Helper buat alert yang kompatibel dengan Bootstrap
 function showAlert(type, message) {
-  alertBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+  const bsType = type === 'error' ? 'danger' : type; // Bootstrap pakai 'danger', bukan 'error'
+  alertBox.innerHTML = `<div class="alert alert-${bsType} fade show" role="alert">${message}</div>`;
 }
 
+// Toggle alasan field
 statusSelect.addEventListener('change', () => {
   alasanGroup.style.display = statusSelect.value === 'nonaktif' ? 'block' : 'none';
 });
 
 async function loadMember() {
   if (!memberId) {
-    loadingState.innerHTML = `<div class="alert alert-error">❌ Link tidak valid. ID member tidak ditemukan.</div>`;
+    loadingState.innerHTML = `<div class="alert alert-danger">❌ Link tidak valid. ID member tidak ditemukan.</div>`;
     return;
   }
   
@@ -27,7 +30,7 @@ async function loadMember() {
     const result = await res.json();
     
     if (!result.success) {
-      loadingState.innerHTML = `<div class="alert alert-error">❌ ${result.message || 'Data tidak ditemukan'}</div>`;
+      loadingState.innerHTML = `<div class="alert alert-danger">❌ ${result.message || 'Data tidak ditemukan'}</div>`;
       return;
     }
     
@@ -40,19 +43,25 @@ async function loadMember() {
     form.whatsapp.value = m.whatsapp || '';
     form.status.value = m.status || 'aktif';
     form.alasanNonaktif.value = m.alasanNonaktif || '';
+    
+    // Tampilkan field alasan kalau statusnya nonaktif
     alasanGroup.style.display = m.status === 'nonaktif' ? 'block' : 'none';
     
+    // Sembunyikan loading, tampilkan form dengan animasi
     loadingState.style.display = 'none';
     form.style.display = 'block';
+    form.classList.add('fade-in-up'); // Tambahin animasi muncul
+    
   } catch (err) {
-    loadingState.innerHTML = `<div class="alert alert-error">❌ Gagal memuat data</div>`;
+    console.error(err);
+    loadingState.innerHTML = `<div class="alert alert-danger">❌ Gagal memuat data. Cek koneksi internet lo.</div>`;
   }
 }
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span class="loader"></span> Menyimpan...';
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Menyimpan...';
   
   const formData = new FormData(form);
   const data = Object.fromEntries(formData.entries());
@@ -66,17 +75,25 @@ form.addEventListener('submit', async (e) => {
     const result = await res.json();
     
     if (result.success) {
-      showAlert('success', '✅ Data berhasil diupdate!');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showAlert('success', '✅ <strong>Berhasil!</strong> Data member lo udah diupdate.');
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll ke atas biar alert kebaca
+      
+      // Opsional: Reset tombol setelah 2 detik
+      setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Simpan Perubahan';
+      }, 2000);
     } else {
-      showAlert('error', `❌ ${result.message || 'Gagal update'}`);
+      showAlert('error', `❌ ${result.message || 'Gagal mengupdate data'}`);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Simpan Perubahan';
     }
   } catch (err) {
-    showAlert('error', '❌ Koneksi gagal.');
-  } finally {
+    showAlert('error', '❌ Koneksi ke server gagal. Coba lagi nanti.');
     submitBtn.disabled = false;
     submitBtn.textContent = 'Simpan Perubahan';
   }
 });
 
+// Jalankan fungsi load saat halaman siap
 loadMember();
