@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Community Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="nav-wrapper">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">⚔</div>
+        <span>Community</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">← Kembali ke Home</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <section class="form-section">
+    <div class="container">
+      <div class="form-card">
+        <h2>🔐 Admin Panel</h2>
+        <p class="subtitle">Masukkan password untuk akses export data lengkap (termasuk nomor WhatsApp).</p>
+        
+        <div id="alertBox"></div>
+        
+        <div id="loginView">
+          <form id="loginForm">
+            <div class="form-group">
+              <label>Password Admin</label>
+              <input type="password" name="password" required placeholder="Masukkan password">
+            </div>
+            <button type="submit" class="btn-submit">Masuk</button>
+          </form>
+        </div>
+        
+        <div id="dashboardView" style="display:none;">
+          <div class="alert alert-success">✅ Login berhasil!</div>
+          
+          <div style="display:flex; flex-direction:column; gap: 12px; margin-top: 20px;">
+            <button class="btn-submit" id="exportXlsxBtn" style="background: linear-gradient(135deg, #10b981, #059669);">
+              📊 Export ke Excel (.xlsx)
+            </button>
+            <button class="btn-submit" id="exportCsvBtn" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+              📄 Export ke CSV
+            </button>
+            <button class="btn-ghost" id="logoutBtn" style="margin-top: 10px;">Logout</button>
+          </div>
+          
+          <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--gray-100);">
+            <p style="color: var(--gray-500); font-size: 13px;">💡 <strong>Tips:</strong> File .xlsx bisa dibuka di Microsoft Excel, Google Sheets, atau LibreOffice. CSV bisa dibuka di hampir semua aplikasi spreadsheet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SheetJS for .xlsx export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

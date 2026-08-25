@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Data — Community Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+   <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-3" href="index.html">
+        <div class="logo-placeholder">
+          <!-- 🔁 GANTI src INI DENGAN URL LOGO GUILD LO -->
+          <img src="https://via.placeholder.com/80x80/1e3a8a/ffffff?text=SS" alt="Logo Stellar Seekers">
+        </div>
+        <span>Stellar Seekers</span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#members">Member</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <section class="form-section">
+    <div class="container">
+      <div class="form-card">
+        <h2>Update Data Member</h2>
+        <p class="subtitle">Ubah data diri lo kapan aja. Perubahan langsung tersimpan.</p>
+        
+        <div id="alertBox"></div>
+        <div id="loadingState" style="text-align:center; padding: 40px;">
+          <span class="loader" style="border-top-color: var(--blue-dark);"></span>
+          <p style="margin-top: 16px; color: var(--gray-500);">Memuat data...</p>
+        </div>
+        
+        <form id="editForm" style="display:none;">
+          <input type="hidden" name="memberId" id="memberId">
+          
+          <div class="form-group">
+            <label>Nickname <span class="required">*</span></label>
+            <input type="text" name="nickname" required maxlength="50">
+          </div>
+          
+          <div class="form-group">
+            <label>Main Job <span class="required">*</span></label>
+            <input type="text" name="mainJob" required maxlength="50">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Buff Land</label>
+              <input type="text" name="buffLand" maxlength="50">
+            </div>
+            <div class="form-group">
+              <label>Kode Land</label>
+              <input type="text" name="kodeLand" maxlength="30">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Nomor WhatsApp <span class="required">*</span></label>
+            <input type="tel" name="whatsapp" required pattern="[0-9+\-\s]{8,20}">
+          </div>
+          
+          <div class="form-group">
+            <label>Status <span class="required">*</span></label>
+            <select name="status" required>
+              <option value="aktif">Aktif</option>
+              <option value="nonaktif">Nonaktif</option>
+            </select>
+          </div>
+          
+          <div class="form-group" id="alasanGroup" style="display:none;">
+            <label>Alasan Nonaktif</label>
+            <textarea name="alasanNonaktif" maxlength="200"></textarea>
+          </div>
+          
+          <button type="submit" class="btn-submit" id="submitBtn">Simpan Perubahan</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/config.js"></script>
+  <script src="js/edit.js"></script>
+</body>
+</html>
