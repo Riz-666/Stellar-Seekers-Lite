@@ -194,10 +194,10 @@ body.page-leaving > *:not(#page-loader) {
   color: var(--blue-dark) !important;
 }
 
-/* .nav-link.active {
+.nav-link.active {
   background: var(--blue-dark);
   color: white !important;
-} */
+}
 
 /* ===== HERO CAROUSEL ===== */
 .hero-carousel {

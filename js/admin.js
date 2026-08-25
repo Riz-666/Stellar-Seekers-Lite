@@ -5,16 +5,23 @@ const alertBox = document.getElementById('alertBox');
 const exportXlsxBtn = document.getElementById('exportXlsxBtn');
 const exportCsvBtn = document.getElementById('exportCsvBtn');
 const logoutBtn = document.getElementById('logoutBtn');
+const loginBtn = document.getElementById('loginBtn');
 
 let adminPassword = '';
 
 function showAlert(type, message) {
-  alertBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+  const bsType = type === 'error' ? 'danger' : type;
+  alertBox.innerHTML = `<div class="alert alert-${bsType} fade show" role="alert">${message}</div>`;
 }
 
+// --- LOGIN LOGIC ---
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const pwd = loginForm.password.value;
+  
+  // Loading state
+  loginBtn.disabled = true;
+  loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memverifikasi...';
   
   try {
     const res = await fetch(`${CONFIG.API_URL}?action=verifyAdmin&password=${encodeURIComponent(pwd)}`);
@@ -24,14 +31,20 @@ loginForm.addEventListener('submit', async (e) => {
       adminPassword = pwd;
       loginView.style.display = 'none';
       dashboardView.style.display = 'block';
+      alertBox.innerHTML = ''; // Clear alert
     } else {
-      showAlert('error', '❌ Password salah!');
+      showAlert('error', '❌ Password salah! Silakan coba lagi.');
+      loginForm.password.value = ''; // Reset input
     }
   } catch (err) {
-    showAlert('error', '❌ Koneksi gagal.');
+    showAlert('error', '❌ Koneksi ke server gagal.');
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Masuk';
   }
 });
 
+// --- LOGOUT LOGIC ---
 logoutBtn.addEventListener('click', () => {
   adminPassword = '';
   loginForm.reset();
@@ -40,18 +53,19 @@ logoutBtn.addEventListener('click', () => {
   alertBox.innerHTML = '';
 });
 
+// --- DATA FETCHING ---
 async function fetchAllData() {
   try {
     const res = await fetch(`${CONFIG.API_URL}?action=export&password=${encodeURIComponent(adminPassword)}`);
     const result = await res.json();
     
     if (!result.success) {
-      showAlert('error', '❌ ' + (result.message || 'Gagal ambil data'));
+      showAlert('error', '❌ ' + (result.message || 'Gagal mengambil data'));
       return null;
     }
     return result.data || [];
   } catch (err) {
-    showAlert('error', '❌ Koneksi gagal.');
+    showAlert('error', '❌ Koneksi ke server gagal.');
     return null;
   }
 }
@@ -66,10 +80,19 @@ function formatDate(dateStr) {
   }
 }
 
-// Export XLSX
+// --- EXPORT XLSX ---
 exportXlsxBtn.addEventListener('click', async () => {
+  const originalText = exportXlsxBtn.innerHTML;
+  exportXlsxBtn.disabled = true;
+  exportXlsxBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sedang menyiapkan Excel...';
+
   const data = await fetchAllData();
-  if (!data || data.length === 0) return;
+  
+  if (!data || data.length === 0) {
+    exportXlsxBtn.disabled = false;
+    exportXlsxBtn.innerHTML = originalText;
+    return;
+  }
   
   const rows = data.map(m => ({
     'ID': m.id,
@@ -77,7 +100,7 @@ exportXlsxBtn.addEventListener('click', async () => {
     'Main Job': m.mainJob,
     'Buff Land': m.buffLand || '',
     'Kode Land': m.kodeLand || '',
-    'WhatsApp': m.whatsapp,
+    'WhatsApp': `'${m.whatsapp}`, // Tambah kutip biar gak jadi format angka di Excel
     'Status': m.status,
     'Alasan Nonaktif': m.alasanNonaktif || '',
     'Tanggal Bergabung': formatDate(m.tanggal)
@@ -93,19 +116,32 @@ exportXlsxBtn.addEventListener('click', async () => {
   }));
   ws['!cols'] = colWidths;
   
-  const filename = `member-export-${new Date().toISOString().slice(0,10)}.xlsx`;
+  const filename = `StellarSeekers_Members_${new Date().toISOString().slice(0,10)}.xlsx`;
   XLSX.writeFile(wb, filename);
+  
+  // Reset button
+  exportXlsxBtn.disabled = false;
+  exportXlsxBtn.innerHTML = originalText;
 });
 
-// Export CSV
+// --- EXPORT CSV ---
 exportCsvBtn.addEventListener('click', async () => {
+  const originalText = exportCsvBtn.innerHTML;
+  exportCsvBtn.disabled = true;
+  exportCsvBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sedang menyiapkan CSV...';
+
   const data = await fetchAllData();
-  if (!data || data.length === 0) return;
+  
+  if (!data || data.length === 0) {
+    exportCsvBtn.disabled = false;
+    exportCsvBtn.innerHTML = originalText;
+    return;
+  }
   
   const headers = ['ID', 'Nickname', 'Main Job', 'Buff Land', 'Kode Land', 'WhatsApp', 'Status', 'Alasan Nonaktif', 'Tanggal Bergabung'];
   const rows = data.map(m => [
     m.id, m.nickname, m.mainJob, m.buffLand || '', m.kodeLand || '',
-    m.whatsapp, m.status, m.alasanNonaktif || '', formatDate(m.tanggal)
+    `'${m.whatsapp}`, m.status, m.alasanNonaktif || '', formatDate(m.tanggal)
   ]);
   
   const csv = [headers, ...rows]
@@ -116,7 +152,11 @@ exportCsvBtn.addEventListener('click', async () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `member-export-${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `StellarSeekers_Members_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
+  
+  // Reset button
+  exportCsvBtn.disabled = false;
+  exportCsvBtn.innerHTML = originalText;
 });
