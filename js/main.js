@@ -4,6 +4,10 @@ const searchInput = document.getElementById('searchInput');
 const filterStatus = document.getElementById('filterStatus');
 let allMembers = [];
 
+// === PAGINATION STATE ===
+let currentPage = 1;
+const itemsPerPage = 6;
+
 async function loadMembers() {
   try {
     const res = await fetch(`${CONFIG.API_URL}?action=list`);
@@ -12,13 +16,16 @@ async function loadMembers() {
     if (data.success) {
       allMembers = data.data || [];
       renderStats();
+      currentPage = 1; // reset ke halaman 1 setiap data baru dimuat
       renderMembers();
     } else {
       memberGrid.innerHTML = `<div class="col-12 text-center py-5 text-muted"><h4>😕 Gagal memuat data</h4></div>`;
+      renderPagination(0);
     }
   } catch (err) {
     console.error(err);
     memberGrid.innerHTML = `<div class="col-12 text-center py-5 text-muted"><h4>⚠️ Koneksi ke server gagal. Cek konfigurasi API.</h4></div>`;
+    renderPagination(0);
   }
 }
 
@@ -43,10 +50,20 @@ function renderMembers() {
   
   if (filtered.length === 0) {
     memberGrid.innerHTML = `<div class="col-12 text-center py-5 text-muted"><h4>🔍 Tidak ada member ditemukan</h4></div>`;
+    renderPagination(0);
     return;
   }
+
+  // Pastikan currentPage tidak out of range
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+
+  // Ambil potongan data sesuai halaman aktif
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const pageMembers = filtered.slice(startIndex, startIndex + itemsPerPage);
   
-  memberGrid.innerHTML = filtered.map(m => {
+  memberGrid.innerHTML = pageMembers.map(m => {
     const initial = (m.nickname || '?').charAt(0).toUpperCase();
     const statusClass = m.status === 'aktif' ? 'text-success bg-success-subtle' : 'text-danger bg-danger-subtle';
     const statusText = m.status === 'aktif' ? 'Aktif' : 'Nonaktif';
@@ -90,6 +107,67 @@ function renderMembers() {
       </div>
     `;
   }).join('');
+
+  renderPagination(totalPages);
+}
+
+// Render tombol pagination (Prev, nomor halaman, Next)
+function renderPagination(totalPages) {
+  const pagination = document.getElementById('memberPagination');
+  if (!pagination) return;
+  pagination.innerHTML = '';
+
+  if (totalPages <= 1) return; // tidak perlu pagination kalau cuma 1 halaman atau kosong
+
+  const createPageItem = (label, page, { disabled = false, active = false } = {}) => {
+    const li = document.createElement('li');
+    li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+    const a = document.createElement('a');
+    a.className = 'page-link';
+    a.href = '#';
+    a.textContent = label;
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (disabled || active) return;
+      currentPage = page;
+      renderMembers();
+      memberGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    li.appendChild(a);
+    return li;
+  };
+
+  // Tombol Previous
+  pagination.appendChild(createPageItem('«', currentPage - 1, { disabled: currentPage === 1 }));
+
+  // Nomor halaman (dibatasi maksimal 5 nomor terlihat + ellipsis)
+  const maxVisible = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+  if (endPage - startPage + 1 < maxVisible) {
+    startPage = Math.max(1, endPage - maxVisible + 1);
+  }
+
+  if (startPage > 1) {
+    pagination.appendChild(createPageItem('1', 1));
+    if (startPage > 2) {
+      pagination.appendChild(createPageItem('...', currentPage, { disabled: true }));
+    }
+  }
+
+  for (let p = startPage; p <= endPage; p++) {
+    pagination.appendChild(createPageItem(String(p), p, { active: p === currentPage }));
+  }
+
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      pagination.appendChild(createPageItem('...', currentPage, { disabled: true }));
+    }
+    pagination.appendChild(createPageItem(String(totalPages), totalPages));
+  }
+
+  // Tombol Next
+  pagination.appendChild(createPageItem('»', currentPage + 1, { disabled: currentPage === totalPages }));
 }
 
 function escapeHtml(str) {
@@ -105,7 +183,13 @@ function formatDate(dateStr) {
   } catch { return dateStr; }
 }
 
-searchInput?.addEventListener('input', renderMembers);
-filterStatus?.addEventListener('change', renderMembers);
+searchInput?.addEventListener('input', function() {
+  currentPage = 1; // reset ke halaman 1 saat search berubah
+  renderMembers();
+});
+filterStatus?.addEventListener('change', function() {
+  currentPage = 1; // reset ke halaman 1 saat filter berubah
+  renderMembers();
+});
 
 loadMembers();
