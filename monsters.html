@@ -118,6 +118,11 @@
         </div>
       </div>
 
+      <!-- PAGINATION -->
+      <nav class="mt-5" aria-label="Monster pagination">
+        <ul id="monstersPagination" class="pagination justify-content-center"></ul>
+      </nav>
+
       <!-- EMPTY STATE -->
       <div id="emptyState" class="text-center py-5 d-none">
         <i class="bi bi-ghost fs-1 text-muted"></i>
@@ -163,9 +168,13 @@
   <script src="js/sheets.js"></script>
   
   <script>
-    let allMonsters = [];
+        let allMonsters = [];
     let groupedMonsters = {};
     let monsterModalInstance = null;
+
+    // === PAGINATION STATE ===
+    let currentPage = 1;
+    const itemsPerPage = 12; // ubah sesuai kebutuhan
 
     document.addEventListener('DOMContentLoaded', function() {
       monsterModalInstance = new bootstrap.Modal(document.getElementById('monsterDetailModal'));
@@ -173,7 +182,7 @@
       // 1. Load data HANYA dari sheet 'monsters'
       if (window.ToramSheets) {
         window.ToramSheets.load('monsters', 'monstersGrid');
-        
+
         document.addEventListener('sheetsdataready', function(e) {
           if (e.detail.page === 'monsters') {
             allMonsters = e.detail.data;
@@ -204,10 +213,12 @@
           });
         }
 
+        currentPage = 1; // reset ke halaman 1 setiap data baru dimuat
         renderGrid();
       }
 
       // 3. Render Grid: Hanya tampilkan 1 perwakilan per nama monster (yang difficulty terendah/Normal)
+      //    + terapkan pagination pada hasil filter/search
       function renderGrid() {
         const grid = document.getElementById('monstersGrid');
         const emptyState = document.getElementById('emptyState');
@@ -215,54 +226,131 @@
         const filterElem = document.getElementById('filterElement').value;
 
         grid.innerHTML = '';
-        let hasResults = false;
 
+        // 3a. Kumpulkan semua nama monster yang lolos filter/search
+        const filteredNames = [];
         for (let name in groupedMonsters) {
-          // Ambil perwakilan (biasanya Normal karena sudah di-sort)
           const rep = groupedMonsters[name][0];
-          
           const elem = (rep['Element'] || 'Neutral').toLowerCase();
           const loc = (rep['Location'] || '').toLowerCase();
           const nameLower = name.toLowerCase();
 
-          // Filter Logic
           const matchSearch = nameLower.includes(search) || loc.includes(search);
           const matchElem = filterElem === 'all' || elem === filterElem.toLowerCase();
 
           if (matchSearch && matchElem) {
-            hasResults = true;
-            const elemClass = `elem-${elem.charAt(0).toUpperCase() + elem.slice(1)}`;
-            const imgUrl = rep['ImageURL'] || '';
-            const imgHtml = imgUrl 
-              ? `<img src="${imgUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">`
-              : '<span style="font-size: 3rem; opacity: 0.3;">👾</span>';
-
-            const card = document.createElement('div');
-            card.className = 'col-md-6 col-lg-4 col-xl-3 fade-in-up';
-            card.innerHTML = `
-              <div class="monster-card" onclick="openMonsterModal('${name.replace(/'/g, "\\'")}')">
-                <div class="monster-img-wrapper">
-                  ${imgHtml}
-                </div>
-                <div class="p-3">
-                  <h6 class="fw-bold mb-2 text-truncate" style="color: var(--blue-dark);" title="${name}">${name}</h6>
-                  <div class="d-flex flex-wrap gap-1 mb-2">
-                    <span class="badge bg-secondary">Lv. ${rep['Level'] || '?'}</span>
-                    <span class="badge ${elemClass}">${rep['Element'] || 'Neutral'}</span>
-                  </div>
-                  <small class="text-muted d-block text-truncate"><i class="bi bi-geo-alt-fill"></i> ${rep['Location'] || 'Unknown'}</small>
-                </div>
-              </div>
-            `;
-            grid.appendChild(card);
+            filteredNames.push(name);
           }
         }
 
-        if (!hasResults) {
+        // 3b. Handle empty state
+        if (filteredNames.length === 0) {
           emptyState.classList.remove('d-none');
+          renderPagination(0);
+          return;
         } else {
           emptyState.classList.add('d-none');
         }
+
+        // 3c. Pastikan currentPage tidak out of range
+        const totalPages = Math.max(1, Math.ceil(filteredNames.length / itemsPerPage));
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        // 3d. Ambil potongan data sesuai halaman aktif
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const pageNames = filteredNames.slice(startIndex, startIndex + itemsPerPage);
+
+        // 3e. Render kartu untuk halaman ini saja
+        pageNames.forEach(name => {
+          const rep = groupedMonsters[name][0];
+          const elem = (rep['Element'] || 'Neutral').toLowerCase();
+          const elemClass = `elem-${elem.charAt(0).toUpperCase() + elem.slice(1)}`;
+          const imgUrl = rep['ImageURL'] || '';
+          const imgHtml = imgUrl
+            ? `<img src="${imgUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">`
+            : '<span style="font-size: 3rem; opacity: 0.3;">👾</span>';
+
+          const card = document.createElement('div');
+          card.className = 'col-md-6 col-lg-4 col-xl-3 fade-in-up';
+          card.innerHTML = `
+            <div class="monster-card" onclick="openMonsterModal('${name.replace(/'/g, "\\'")}')">
+              <div class="monster-img-wrapper">
+                ${imgHtml}
+              </div>
+              <div class="p-3">
+                <h6 class="fw-bold mb-2 text-truncate" style="color: var(--blue-dark);" title="${name}">${name}</h6>
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                  <span class="badge bg-secondary">Lv. ${rep['Level'] || '?'}</span>
+                  <span class="badge ${elemClass}">${rep['Element'] || 'Neutral'}</span>
+                </div>
+                <small class="text-muted d-block text-truncate"><i class="bi bi-geo-alt-fill"></i> ${rep['Location'] || 'Unknown'}</small>
+              </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+
+        renderPagination(totalPages);
+      }
+
+      // 3f. Render tombol pagination (Prev, nomor halaman, Next)
+      function renderPagination(totalPages) {
+        const pagination = document.getElementById('monstersPagination');
+        if (!pagination) return;
+        pagination.innerHTML = '';
+
+        if (totalPages <= 1) return; // tidak perlu pagination kalau cuma 1 halaman atau kosong
+
+        const createPageItem = (label, page, { disabled = false, active = false } = {}) => {
+          const li = document.createElement('li');
+          li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+          const a = document.createElement('a');
+          a.className = 'page-link';
+          a.href = '#';
+          a.textContent = label;
+          a.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (disabled || active) return;
+            currentPage = page;
+            renderGrid();
+            document.getElementById('monstersGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          li.appendChild(a);
+          return li;
+        };
+
+        // Tombol Previous
+        pagination.appendChild(createPageItem('«', currentPage - 1, { disabled: currentPage === 1 }));
+
+        // Nomor halaman (dibatasi maksimal 5 nomor terlihat + ellipsis)
+        const maxVisible = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+        if (endPage - startPage + 1 < maxVisible) {
+          startPage = Math.max(1, endPage - maxVisible + 1);
+        }
+
+        if (startPage > 1) {
+          pagination.appendChild(createPageItem('1', 1));
+          if (startPage > 2) {
+            pagination.appendChild(createPageItem('...', currentPage, { disabled: true }));
+          }
+        }
+
+        for (let p = startPage; p <= endPage; p++) {
+          pagination.appendChild(createPageItem(String(p), p, { active: p === currentPage }));
+        }
+
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            pagination.appendChild(createPageItem('...', currentPage, { disabled: true }));
+          }
+          pagination.appendChild(createPageItem(String(totalPages), totalPages));
+        }
+
+        // Tombol Next
+        pagination.appendChild(createPageItem('»', currentPage + 1, { disabled: currentPage === totalPages }));
       }
 
       // 4. Open Modal with Difficulty Tabs
@@ -271,7 +359,7 @@
         if (!group || group.length === 0) return;
 
         document.getElementById('modalMonsterName').textContent = monsterName;
-        
+
         let tabsHtml = '';
         let contentHtml = '';
 
@@ -294,12 +382,12 @@
           // Format Drops
           const dropsRaw = m['Drop'] || '';
           const dropsArray = dropsRaw.split(';').map(d => d.trim()).filter(d => d.length > 0);
-          const dropsHtml = dropsArray.length > 0 
+          const dropsHtml = dropsArray.length > 0
             ? dropsArray.map(d => `<span class="badge bg-light text-dark border me-1 mb-1 p-2">${d}</span>`).join('')
             : '<span class="text-muted">Tidak ada data drop.</span>';
 
           const imgUrl = m['ImageURL'] || '';
-          const imgHtml = imgUrl 
+          const imgHtml = imgUrl
             ? `<img src="${imgUrl}" class="img-fluid rounded" style="max-height: 150px; object-fit: contain; background: white; padding: 10px;" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">`
             : '<span style="font-size: 4rem; opacity: 0.3;">👾</span>';
 
@@ -326,7 +414,7 @@
                     </li>
                     <li class="mb-2 d-flex justify-content-between border-bottom pb-2">
                       <span class="text-muted"><i class="bi bi-shield me-2"></i>Tipe</span>
-                      <span class="fw-bold">${m['Type'] || 'Boss'}</ each="contentHtml">
+                      <span class="fw-bold">${m['Type'] || 'Boss'}</span>
                     </li>
                   </ul>
                   <h6 class="fw-bold mb-3"><i class="bi bi-gift me-2"></i>Drop List:</h6>
@@ -345,9 +433,15 @@
         monsterModalInstance.show();
       };
 
-      // 5. Event Listeners untuk Filter
-      document.getElementById('searchInput').addEventListener('input', renderGrid);
-      document.getElementById('filterElement').addEventListener('change', renderGrid);
+      // 5. Event Listeners untuk Filter (reset ke halaman 1 setiap kali berubah)
+      document.getElementById('searchInput').addEventListener('input', function() {
+        currentPage = 1;
+        renderGrid();
+      });
+      document.getElementById('filterElement').addEventListener('change', function() {
+        currentPage = 1;
+        renderGrid();
+      });
     });
   </script>
 </body>

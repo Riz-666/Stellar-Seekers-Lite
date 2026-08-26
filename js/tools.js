@@ -1,6 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
   console.log("Tools.js loaded successfully!");
 
+  // Fungsi untuk custom dropdown
+window.selectHokianAspect = function(value, element) {
+  const hiddenInput = document.getElementById('hokianAspect');
+  const selectedText = document.getElementById('selectedAspectText');
+  
+  if (hiddenInput && selectedText) {
+    hiddenInput.value = value;
+    selectedText.innerHTML = element.innerHTML;
+  }
+};
+
   // ===== 1. LOGIKA TAB / SIDEBAR =====
   const sidebarButtons = document.querySelectorAll('#toolsSidebar .list-group-item:not(:disabled)');
   const toolViews = document.querySelectorAll('.tool-view');
@@ -496,4 +507,119 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderMaterialsTable();
   console.log("MQ Materials Table initialized with", mqMaterialsData.length, "items.");
+  const hokianMessages = {
+    general: [
+      { min: 0, title: "{name}, RNG RED FLAG! ⚠️", msg: "Hoki lagi sial. Mending AFK di kota atau logout dulu. Jangan dipaksa!" },
+      { min: 40, title: "{name}, Biasa Aja... 😐", msg: "RNG lagi netral. Jangan neko-neko dulu, main aman lebih baik." },
+      { min: 70, title: "{name}, Lagi Hoki Nih! 😊", msg: "Luck-mu lagi bagus. Cocok buat farm boss atau coba-coba fill stat." },
+      { min: 90, title: "{name}, DEWA RNG! 🌟", msg: "Hari ini RNG-mu gacor parah! Waktunya upgrade, craft, atau buka gacha. Semua bakal hoki!" }
+    ],
+    fillstat: [
+      { min: 0, title: "{name}, JANGAN FILL STAT! 🛑", msg: "RNG lagi jahat. Fill stat sekarang = material hilang percuma. Tunda dulu bro!" },
+      { min: 40, title: "{name}, Rawan Pecah 💥", msg: "Success rate lagi rendah. Pastikan punya banyak backup material atau tunggu dulu." },
+      { min: 70, title: "{name}, Fill Stat Aman 🛡️", msg: "Peluang sukses tinggi. Siapkan material cadangan dikit, tapi overall aman kok." },
+      { min: 90, title: "{name}, ANTI PECAH 100%! 🔨", msg: "Success rate fill stat lagi max! Ga bakal ada stat yang hilang. Gaskeun tanpa takut pecah!" }
+    ],
+    craft: [
+      { min: 0, title: "{name}, Material Hilang Percuma 🗑️", msg: "Craft sekarang = buang-buang material. Mending farm material dulu atau tunggu hoki membaik!" },
+      { min: 40, title: "{name}, Hasil Mungkin Zonk 📉", msg: "Crafting hari ini mungkin cuma dapat 0 slot atau POT rendah. Jangan berharap tinggi." },
+      { min: 70, title: "{name}, Craft Lagi Bagus 🍀", msg: "Peluang dapat slot atau POT bagus terbuka. Lanjutkan crafting-mu!" },
+      { min: 90, title: "{name}, 2 SLOT GUARANTEED! ⚒️", msg: "Crafting hoki maksimal! Potensi dapat 2 slot atau high POT sangat tinggi. Waktunya Craft Brutal!" }
+    ],
+    drop: [
+      { min: 0, title: "{name}, Farming Zonk Total 🗑️", msg: "Monster cuma drop Material atau Equipment 1 Slot receh. Mending istirahat atau lakukan quest aja." },
+      { min: 40, title: "{name}, Boss Pelit Hari Ini 🏜️", msg: "Drop lagi kering. Coba ganti channel, map, atau party buat boost drop rate." },
+      { min: 70, title: "{name}, Rejeki Lagi Mengalir 🍀", msg: "Drop rate bersahabat. Lanjutkan farming Sampai Gila." },
+      { min: 90, title: "{name}, DROP RATE GACOR! 💎", msg: "Monster/Boss bakal drop item 2s/High Atk! Farming time! Pakai Drop Up book makin gacor!" }
+    ],
+    gacha: [
+      { min: 0, title: "{name}, JANGAN BUANG ORB! 💸", msg: "RNG gacha lagi jahat. Orb mahal cuma bakal dapat Aksesoris. Tahan dulu jempolmu!" },
+      { min: 40, title: "{name}, Orb Terbang Percuma 📉", msg: "Gacha hari ini kemungkinan besar zonk. Simpan orb-mu untuk waktu yang lebih baik." },
+      { min: 70, title: "{name}, Gacha Lagi Bagus 🎟️", msg: "Peluang dapat item dari gacha cukup tinggi. Gas tipis-tipis!" },
+      { min: 90, title: "{name}, PRIME ATAU LEGSILK MENANTIMU! 🎁", msg: "Buka orb sekarang! Avatar 1 Set, Legsilk, atau Prime menantimu. Ini saatnya!" }
+    ]
+  };
+
+  const btnCekHokian = document.getElementById('btnCekHokian');
+  if (btnCekHokian) {
+    btnCekHokian.addEventListener('click', () => {
+      const nicknameRaw = document.getElementById('hokianNickname').value.trim();
+      const name = nicknameRaw || "Petualang"; // Default jika kosong
+      const aspect = document.getElementById('hokianAspect').value;
+
+      const resultDiv = document.getElementById('hokianResult');
+      const scoreEl = document.getElementById('hokianScore');
+      const titleEl = document.getElementById('hokianTitle');
+      const msgEl = document.getElementById('hokianMessage');
+      const visualEl = document.getElementById('hokianVisual');
+
+      // Reset & Tampilkan animasi loading
+      resultDiv.classList.remove('d-none');
+      scoreEl.textContent = '0%';
+      titleEl.textContent = `Membaca nasib ${name}...`;
+      msgEl.textContent = 'Mohon tunggu sebentar';
+      visualEl.textContent = '🔮';
+      visualEl.style.animation = 'shake 0.5s infinite';
+
+      // Generate skor acak 0-100
+      const finalScore = Math.floor(Math.random() * 101);
+
+      // Cari pesan yang sesuai
+      const messages = hokianMessages[aspect];
+      const matched = messages.slice().reverse().find(m => finalScore >= m.min);
+
+      // Ganti placeholder {name} dengan nickname asli
+      const finalTitle = matched.title.replace('{name}', name);
+      const finalMsg = matched.msg.replace('{name}', name);
+
+      // Animasi angka berputar (rolling)
+      let currentScore = 0;
+      const duration = 1500; // 1.5 detik
+      const intervalTime = 20;
+      const steps = duration / intervalTime;
+      const increment = finalScore / steps;
+
+      const rollInterval = setInterval(() => {
+        currentScore += increment;
+        if (currentScore >= finalScore) {
+          currentScore = finalScore;
+          clearInterval(rollInterval);
+
+          // Finalisasi UI
+          scoreEl.textContent = finalScore + '%';
+          titleEl.textContent = finalTitle;
+          msgEl.textContent = finalMsg;
+          visualEl.style.animation = 'none';
+
+          // Pewarnaan & Efek berdasarkan skor
+          if (finalScore >= 80) {
+            scoreEl.style.color = '#198754'; // Hijau
+            visualEl.textContent = '🌟';
+            // Trigger Confetti!
+            if (typeof confetti === 'function') {
+              confetti({
+                particleCount: 150,
+                spread: 80,
+                origin: { y: 0.6 },
+                colors: ['#FFD700', '#FFA500', '#198754', '#0d6efd']
+              });
+            }
+          } else if (finalScore >= 50) {
+            scoreEl.style.color = '#0d6efd'; // Biru
+            visualEl.textContent = '😊';
+          } else if (finalScore >= 30) {
+            scoreEl.style.color = '#ffc107'; // Kuning
+            visualEl.textContent = '😐';
+          } else {
+            scoreEl.style.color = '#dc3545'; // Merah
+            visualEl.textContent = '💀';
+            // Efek getar 3x kalau hokian jelek
+            visualEl.style.animation = 'shake 0.5s ease-in-out 3';
+          }
+        } else {
+          scoreEl.textContent = Math.floor(currentScore) + '%';
+        }
+      }, intervalTime);
+    });
+  }
 });
