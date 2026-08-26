@@ -665,3 +665,68 @@ body.page-leaving > *:not(#page-loader) {
   background-color: var(--blue-soft);
   color: var(--blue-dark);
 }
+
+/* ===== DATABASE ITEM STYLING ===== */
+.form-card {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--gray-100);
+}
+
+#itemsGrid .form-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--blue-light);
+}
+
+.placeholder-icon {
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+/* Modal Customization */
+.modal-content {
+  border: 1px solid var(--gray-100);
+}
+
+.nav-pills .nav-link {
+  color: var(--gray-700);
+  background-color: var(--gray-100);
+}
+
+.nav-pills .nav-link.active {
+  background-color: var(--blue-dark);
+  color: white;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-50) 50%, var(--gray-100) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.enhancement-paths .path-container {
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+}
+
+.enhancement-paths .item-node {
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.enhancement-paths .item-node:hover {
+  transform: translateX(5px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.enhancement-paths .badge {
+  font-size: 0.75rem;
+}

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Monster — Stellar Seekers</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .monster-card {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-100);
+      overflow: hidden;
+      height: 100%;
+    }
+    .monster-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--blue-light);
+    }
+    .monster-img-wrapper {
+      height: 140px;
+      background: var(--gray-50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .monster-img-wrapper img {
+      max-height: 100%;
+      width: auto;
+      object-fit: contain;
+    }
+    .elem-Fire { background-color: #fee2e2 !important; color: #991b1b !important; }
+    .elem-Water { background-color: #dbeafe !important; color: #1e40af !important; }
+    .elem-Wind { background-color: #dcfce7 !important; color: #166534 !important; }
+    .elem-Earth { background-color: #fef3c7 !important; color: #92400e !important; }
+    .elem-Light { background-color: #fef9c3 !important; color: #854d0e !important; }
+    .elem-Dark { background-color: #f3e8ff !important; color: #6b21a8 !important; }
+    .elem-Neutral { background-color: #f1f5f9 !important; color: #475569 !important; }
+  </style>
+</head>
+<body style="scroll-behavior: smooth;">
+
+  <!-- PAGE LOADER -->
+  <div id="page-loader">
+    <div class="loader-orbit">
+      <div class="loader-core"></div>
+      <div class="loader-ring"><span class="loader-moon"></span></div>
+    </div>
+    <p class="loader-label">Stellar Seekers</p>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-3" href="index.html">
+        <div class="logo-placeholder">
+          <img src="https://via.placeholder.com/80x80/1e3a8a/ffffff?text=SS" alt="Logo">
+        </div>
+        <span>Stellar Seekers</span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="tools.html">Toram Tools</a></li>
+          <li class="nav-item"><a class="nav-link" href="tools-items.html">Item</a></li>
+          <li class="nav-item"><a class="nav-link active" href="monsters.html">Monster</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <section class="section-padding" style="padding-top: 120px; min-height: 100vh; background-color: var(--gray-50);">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold display-5" style="color: var(--blue-dark);">Database Monster</h2>
+        <p class="text-muted fs-5">Cari informasi monster, lokasi, elemen, dan daftar drop item. Klik monster untuk melihat detail per difficulty.</p>
+      </div>
+
+      <!-- SEARCH & FILTER -->
+      <div class="form-card p-4 mb-4">
+        <div class="row g-3">
+          <div class="col-md-8">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari nama monster atau lokasi...">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <select id="filterElement" class="form-select">
+              <option value="all">Semua Elemen</option>
+              <option value="Fire">🔥 Fire</option>
+              <option value="Water">💧 Water</option>
+              <option value="Wind">🌪️ Wind</option>
+              <option value="Earth">🌍 Earth</option>
+              <option value="Light">✨ Light</option>
+              <option value="Dark">🌑 Dark</option>
+              <option value="Neutral">⚪ Neutral</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- MONSTER GRID -->
+      <div id="monstersGrid" class="row g-4">
+        <div class="col-12 text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted mt-2">Memuat data monster dari Google Sheets...</p>
+        </div>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div id="emptyState" class="text-center py-5 d-none">
+        <i class="bi bi-ghost fs-1 text-muted"></i>
+        <p class="text-muted mt-3">Monster tidak ditemukan.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container text-center pt-4 border-top" style="border-color: rgba(255,255,255,0.1) !important; color: rgba(255,255,255,0.5);">
+      © 2026 Stellar Seekers. Made By Naraya◦.
+    </div>
+  </footer>
+
+  <!-- MONSTER DETAIL MODAL -->
+  <div class="modal fade" id="monsterDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content" style="border: none; border-radius: var(--radius-lg); overflow: hidden;">
+        <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, var(--blue-soft), white);">
+          <h5 class="modal-title fw-bold" style="color: var(--blue-dark);" id="modalMonsterName">Loading...</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <!-- Tabs for Difficulties -->
+          <ul class="nav nav-pills mb-3 justify-content-center" id="modalTabs" role="tablist">
+            <!-- Tabs will be injected here by JS -->
+          </ul>
+          
+          <!-- Tab Content -->
+          <div class="tab-content" id="modalTabContent">
+            <!-- Content will be injected here by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/transition.js"></script>
+  <script src="js/sheets.js"></script>
+  
+  <script>
+    let allMonsters = [];
+    let groupedMonsters = {};
+    let monsterModalInstance = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      monsterModalInstance = new bootstrap.Modal(document.getElementById('monsterDetailModal'));
+
+      // 1. Load data HANYA dari sheet 'monsters'
+      if (window.ToramSheets) {
+        window.ToramSheets.load('monsters', 'monstersGrid');
+        
+        document.addEventListener('sheetsdataready', function(e) {
+          if (e.detail.page === 'monsters') {
+            allMonsters = e.detail.data;
+            processDataAndRender();
+          }
+        });
+      }
+
+      // 2. Process Data: Group by Name & Sort by Difficulty
+      function processDataAndRender() {
+        groupedMonsters = {};
+        const diffOrder = { 'Easy': 1, 'Normal': 2, 'Hard': 3, 'Nightmare': 4, 'Ultimate': 5 };
+
+        allMonsters.forEach(m => {
+          const name = m['Name'] || 'Unknown';
+          if (!groupedMonsters[name]) {
+            groupedMonsters[name] = [];
+          }
+          groupedMonsters[name].push(m);
+        });
+
+        // Sort each monster's difficulties: Easy -> Normal -> Hard -> Nightmare -> Ultimate
+        for (let name in groupedMonsters) {
+          groupedMonsters[name].sort((a, b) => {
+            const diffA = (a['Difficulty'] || 'Normal').trim();
+            const diffB = (b['Difficulty'] || 'Normal').trim();
+            return (diffOrder[diffA] || 99) - (diffOrder[diffB] || 99);
+          });
+        }
+
+        renderGrid();
+      }
+
+      // 3. Render Grid: Hanya tampilkan 1 perwakilan per nama monster (yang difficulty terendah/Normal)
+      function renderGrid() {
+        const grid = document.getElementById('monstersGrid');
+        const emptyState = document.getElementById('emptyState');
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const filterElem = document.getElementById('filterElement').value;
+
+        grid.innerHTML = '';
+        let hasResults = false;
+
+        for (let name in groupedMonsters) {
+          // Ambil perwakilan (biasanya Normal karena sudah di-sort)
+          const rep = groupedMonsters[name][0];
+          
+          const elem = (rep['Element'] || 'Neutral').toLowerCase();
+          const loc = (rep['Location'] || '').toLowerCase();
+          const nameLower = name.toLowerCase();
+
+          // Filter Logic
+          const matchSearch = nameLower.includes(search) || loc.includes(search);
+          const matchElem = filterElem === 'all' || elem === filterElem.toLowerCase();
+
+          if (matchSearch && matchElem) {
+            hasResults = true;
+            const elemClass = `elem-${elem.charAt(0).toUpperCase() + elem.slice(1)}`;
+            const imgUrl = rep['ImageURL'] || '';
+            const imgHtml = imgUrl 
+              ? `<img src="${imgUrl}" alt="${name}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">`
+              : '<span style="font-size: 3rem; opacity: 0.3;">👾</span>';
+
+            const card = document.createElement('div');
+            card.className = 'col-md-6 col-lg-4 col-xl-3 fade-in-up';
+            card.innerHTML = `
+              <div class="monster-card" onclick="openMonsterModal('${name.replace(/'/g, "\\'")}')">
+                <div class="monster-img-wrapper">
+                  ${imgHtml}
+                </div>
+                <div class="p-3">
+                  <h6 class="fw-bold mb-2 text-truncate" style="color: var(--blue-dark);" title="${name}">${name}</h6>
+                  <div class="d-flex flex-wrap gap-1 mb-2">
+                    <span class="badge bg-secondary">Lv. ${rep['Level'] || '?'}</span>
+                    <span class="badge ${elemClass}">${rep['Element'] || 'Neutral'}</span>
+                  </div>
+                  <small class="text-muted d-block text-truncate"><i class="bi bi-geo-alt-fill"></i> ${rep['Location'] || 'Unknown'}</small>
+                </div>
+              </div>
+            `;
+            grid.appendChild(card);
+          }
+        }
+
+        if (!hasResults) {
+          emptyState.classList.remove('d-none');
+        } else {
+          emptyState.classList.add('d-none');
+        }
+      }
+
+      // 4. Open Modal with Difficulty Tabs
+      window.openMonsterModal = function(monsterName) {
+        const group = groupedMonsters[monsterName];
+        if (!group || group.length === 0) return;
+
+        document.getElementById('modalMonsterName').textContent = monsterName;
+        
+        let tabsHtml = '';
+        let contentHtml = '';
+
+        group.forEach((m, index) => {
+          const diff = m['Difficulty'] || 'Normal';
+          const isActive = index === 0 ? 'active' : '';
+          const show = index === 0 ? 'show active' : '';
+          const tabId = `tab-${diff.replace(/\s+/g, '')}`;
+          const contentId = `content-${diff.replace(/\s+/g, '')}`;
+
+          // Generate Tab Button
+          tabsHtml += `
+            <li class="nav-item" role="presentation">
+              <button class="nav-link ${isActive}" id="${tabId}" data-bs-toggle="tab" data-bs-target="#${contentId}" type="button" role="tab">
+                ${diff}
+              </button>
+            </li>
+          `;
+
+          // Format Drops
+          const dropsRaw = m['Drop'] || '';
+          const dropsArray = dropsRaw.split(';').map(d => d.trim()).filter(d => d.length > 0);
+          const dropsHtml = dropsArray.length > 0 
+            ? dropsArray.map(d => `<span class="badge bg-light text-dark border me-1 mb-1 p-2">${d}</span>`).join('')
+            : '<span class="text-muted">Tidak ada data drop.</span>';
+
+          const imgUrl = m['ImageURL'] || '';
+          const imgHtml = imgUrl 
+            ? `<img src="${imgUrl}" class="img-fluid rounded" style="max-height: 150px; object-fit: contain; background: white; padding: 10px;" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">`
+            : '<span style="font-size: 4rem; opacity: 0.3;">👾</span>';
+
+          // Generate Tab Content
+          contentHtml += `
+            <div class="tab-pane fade ${show}" id="${contentId}" role="tabpanel">
+              <div class="row g-4">
+                <div class="col-md-5 text-center">
+                  ${imgHtml}
+                  <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
+                    <span class="badge bg-primary fs-6">Lv. ${m['Level'] || '?'}</span>
+                    <span class="badge bg-dark fs-6">${m['Element'] || 'Neutral'}</span>
+                  </div>
+                </div>
+                <div class="col-md-7">
+                  <ul class="list-unstyled mb-4">
+                    <li class="mb-2 d-flex justify-content-between border-bottom pb-2">
+                      <span class="text-muted"><i class="bi bi-heart-pulse me-2"></i>HP</span>
+                      <span class="fw-bold text-danger">${Number(m['HP'] || 0).toLocaleString()}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between border-bottom pb-2">
+                      <span class="text-muted"><i class="bi bi-geo-alt me-2"></i>Lokasi</span>
+                      <span class="fw-bold text-end" style="max-width: 60%;">${m['Location'] || 'Unknown'}</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between border-bottom pb-2">
+                      <span class="text-muted"><i class="bi bi-shield me-2"></i>Tipe</span>
+                      <span class="fw-bold">${m['Type'] || 'Boss'}</ each="contentHtml">
+                    </li>
+                  </ul>
+                  <h6 class="fw-bold mb-3"><i class="bi bi-gift me-2"></i>Drop List:</h6>
+                  <div class="d-flex flex-wrap">
+                    ${dropsHtml}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        document.getElementById('modalTabs').innerHTML = tabsHtml;
+        document.getElementById('modalTabContent').innerHTML = contentHtml;
+
+        monsterModalInstance.show();
+      };
+
+      // 5. Event Listeners untuk Filter
+      document.getElementById('searchInput').addEventListener('input', renderGrid);
+      document.getElementById('filterElement').addEventListener('change', renderGrid);
+    });
+  </script>
+</body>
+</html>
