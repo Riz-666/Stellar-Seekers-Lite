@@ -22,7 +22,8 @@ window.ToramSheets = (function () {
       quests:      { name: 'Quests',      gid: '351293494' },
       pets:        { name: 'Pets',        gid: '665223799' }, 
       homepage:    { name: 'Homepage',    gid: '1753513645' },
-      skilltrees:  { name: 'SkillTrees',  gid: '1915330408' }
+      skilltrees:  { name: 'SkillTrees',  gid: '1915330408' },
+      fillstatformulas: { name: 'FillStatFormulas', gid: '1999976640' }
     }
   };
 

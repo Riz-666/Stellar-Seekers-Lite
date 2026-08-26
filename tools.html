@@ -21,7 +21,7 @@
     <p class="loader-label">Stellar Seekers</p>
   </div>
 
-  
+
   <!-- NAVBAR -->
   <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
     <div class="container">
@@ -73,13 +73,9 @@
                 data-target="fillstat-sim">
                 <i class="bi bi-gem"></i> Fill Stat Simulator
               </button>
-              <button class="list-group-item list-group-item-action d-flex align-items-center gap-2 opacity-50"
-                disabled>
-                <i class="bi bi-gem"></i> List Xtall (Segera)
-              </button>
-              <button class="list-group-item list-group-item-action d-flex align-items-center gap-2 opacity-50"
-                disabled>
-                <i class="bi bi-shield-shaded"></i> BS Calculator (Segera)
+              <button class="list-group-item list-group-item-action d-flex align-items-center gap-2"
+                data-target="saved-formulas-view" onclick="window.loadAndRenderFormulas()">
+                <i class="bi bi-folder"></i> Rumus Fill Stat
               </button>
             </div>
             <a href="index.html" class="btn btn-outline-secondary w-100 mt-4">
@@ -269,118 +265,174 @@
             </div>
           </div>
           <!-- TOOL 3: FILL STAT SIMULATOR -->
-<div id="fillstat-sim" class="tool-view d-none fade-in-up">
-  <div class="form-card">
-    <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
-      <i class="bi bi-gem fs-2" style="color: var(--blue-light);"></i>
-      <div>
-        <h3 class="fw-bold mb-0" style="color: var(--blue-dark);">Fill Stat Simulator</h3>
-        <small class="text-muted">Simulasi penambahan 4 stat custom untuk Weapon & Armor. Hitung POT, Success Rate, dan biaya material dengan akurat.</small>
-      </div>
-    </div>
-
-        <!-- Pengaturan Dasar -->
-    <div class="row g-3 mb-4 p-3 bg-light rounded border">
-      <div class="col-12"><h6 class="fw-bold mb-3" style="color: var(--blue-dark);">⚙️ Pengaturan Item</h6></div>
-      
-      <div class="col-md-3">
-        <label class="form-label fw-semibold">Tipe Item</label>
-        <select id="weap_arm" class="form-select">
-          <option value="w">Weapon (Senjata)</option>
-          <option value="a">Armor (Zirah)</option>
-        </select>
-      </div>
-      
-      <div class="col-md-3">
-        <label class="form-label fw-semibold">POT Awal</label>
-        <input type="number" id="starting_pot" class="form-control" value="46" min="0" max="100">
-      </div>
-      
-      <div class="col-md-3">
-        <label class="form-label fw-semibold">POT Resep</label>
-        <input type="number" id="recipe_pot" class="form-control" value="46" min="0" max="100">
-      </div>
-      
-      <div class="col-md-3">
-        <label class="form-label fw-semibold">TEC (0-255)</label>
-        <input type="number" id="tec" class="form-control" value="255" min="0" max="255">
-      </div>
-      
-      <div class="col-md-4">
-        <label class="form-label fw-semibold">Proficiency</label>
-        <input type="number" id="proficiency" class="form-control" value="0" min="0">
-      </div>
-      
-      <div class="col-md-4 d-flex align-items-end">
-        <div class="form-check mb-2">
-          <input class="form-check-input" type="checkbox" id="mat_reduction">
-          <label class="form-check-label fw-semibold" for="mat_reduction">10% Material Reduction Passive</label>
-        </div>
-      </div>
-      
-      <div class="col-md-4 d-flex align-items-end">
-        <button id="startSimBtn" class="btn btn-primary-custom w-100">
-          <i class="bi bi-play-fill me-2"></i>Mulai Simulasi
-        </button>
-      </div>
-    </div>
-
-    <!-- Workspace (Muncul setelah klik Mulai) -->
-    <div id="workspaceArea" style="display: none;">
-      <div class="row g-4">
-        <!-- Kolom Kiri: Slots & Controls -->
-        <div class="col-lg-7">
-          <div class="p-3 border rounded bg-white mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <div>
-                <span class="badge bg-primary fs-6" id="potentialDisplay">Potential: 0 / 0</span>
+          <div id="fillstat-sim" class="tool-view d-none fade-in-up">
+            <div class="form-card">
+              <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                <i class="bi bi-gem fs-2" style="color: var(--blue-light);"></i>
+                <div>
+                  <h3 class="fw-bold mb-0" style="color: var(--blue-dark);">Fill Stat Simulator</h3>
+                  <small class="text-muted">Simulasi penambahan 4 stat custom untuk Weapon & Armor. Hitung POT, Success
+                    Rate, dan biaya material dengan akurat.</small>
+                </div>
               </div>
-              <div>
-                <span class="badge bg-success fs-6" id="successRateDisplay">Success Rate: 0%</span>
+
+              <!-- Pengaturan Dasar -->
+              <div class="row g-3 mb-4 p-3 bg-light rounded border">
+                <div class="col-12">
+                  <h6 class="fw-bold mb-3" style="color: var(--blue-dark);">⚙️ Pengaturan Item</h6>
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold">Tipe Item</label>
+                  <select id="weap_arm" class="form-select">
+                    <option value="w">Weapon (Senjata)</option>
+                    <option value="a">Armor (Zirah)</option>
+                  </select>
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold">POT Awal</label>
+                  <input type="number" id="starting_pot" class="form-control" value="46" min="0" max="100">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold">POT Resep</label>
+                  <input type="number" id="recipe_pot" class="form-control" value="46" min="0" max="100">
+                </div>
+
+                <div class="col-md-3">
+                  <label class="form-label fw-semibold">TEC (0-255)</label>
+                  <input type="number" id="tec" class="form-control" value="255" min="0" max="255">
+                </div>
+
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold">Proficiency</label>
+                  <input type="number" id="proficiency" class="form-control" value="0" min="0">
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="mat_reduction">
+                    <label class="form-check-label fw-semibold" for="mat_reduction">10% Material Reduction
+                      Passive</label>
+                  </div>
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                  <button id="startSimBtn" class="btn btn-primary-custom w-100">
+                    <i class="bi bi-play-fill me-2"></i>Mulai Simulasi
+                  </button>
+                </div>
+              </div>
+
+              <!-- Workspace (Muncul setelah klik Mulai) -->
+              <div id="workspaceArea" style="display: none;">
+                <div class="row g-4">
+                  <!-- Kolom Kiri: Slots & Controls -->
+                  <div class="col-lg-7">
+                    <div class="p-3 border rounded bg-white mb-3">
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                          <span class="badge bg-primary fs-6" id="potentialDisplay">Potential: 0 / 0</span>
+                        </div>
+                        <div>
+                          <span class="badge bg-success fs-6" id="successRateDisplay">Success Rate: 0%</span>
+                        </div>
+                      </div>
+
+                      <!-- 8 Slots akan di-generate oleh JS di sini -->
+                      <div id="slotsContainer" class="mb-3"></div>
+
+                      <div class="d-flex gap-2 justify-content-center mt-3">
+                        <button id="confirmButton" class="btn btn-success flex-fill" disabled>✅ Confirm</button>
+                        <button id="repeatButton" class="btn btn-warning flex-fill" disabled>🔄 Repeat</button>
+                        <button id="undoButton" class="btn btn-secondary flex-fill" disabled>↶ Undo</button>
+                        <button id="redoButton" class="btn btn-info flex-fill text-white" disabled>↷ Redo</button>
+                      </div>
+                      <div class="text-center mt-2">
+                        <small class="text-muted fst-italic">Tips: Gunakan tombol A (Max), S (Step+Confirm), D (Min), F
+                          (Fill), R (Undo)</small>
+                      </div>
+                      <!-- Tambahkan di dalam div yang sama dengan tombol Confirm/Repeat/Undo/Redo -->
+                      <div class="d-flex gap-2 justify-content-center mt-3">
+                        <button id="saveFormulaBtn" class="btn btn-success flex-fill" style="display: none;">
+                          <i class="bi bi-save"></i> Simpan Rumus
+                        </button>
+                        <button id="loadFormulaBtn" class="btn btn-info flex-fill text-white">
+                          <i class="bi bi-folder"></i> Load Rumus
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Kolom Kanan: Hasil & Material -->
+                  <div class="col-lg-5">
+                    <div class="p-3 border rounded bg-white mb-3">
+                      <h6 class="fw-bold mb-3 border-bottom pb-2">📊 Langkah-langkah</h6>
+                      <div id="formulaDisplay" class="small"
+                        style="max-height: 250px; overflow-y: auto; line-height: 1.6;">
+                        <em class="text-muted">Belum ada langkah yang dilakukan.</em>
+                      </div>
+                    </div>
+
+                    <div class="p-3 border rounded bg-white">
+                      <h6 class="fw-bold mb-3 border-bottom pb-2">💎 Biaya Material</h6>
+                      <div class="table-responsive">
+                        <table class="table table-sm table-borderless mb-0" id="materialTable">
+                          <tbody>
+                            <!-- Diisi oleh JS -->
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- End Workspace -->
+            </div>
+          </div>
+
+          <!-- TOOL 4: RUMUS FILL STAT TERSIMPAN -->
+          <div id="saved-formulas-view" class="tool-view d-none fade-in-up">
+            <div class="form-card p-4">
+              <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
+                <i class="bi bi-folder2-open fs-2" style="color: var(--blue-light);"></i>
+                <div>
+                  <h3 class="fw-bold mb-0" style="color: var(--blue-dark);">Rumus Fill Stat Tersimpan</h3>
+                  <small class="text-muted">Kelola dan muat ulang rumus fill stat yang pernah kamu simpan.</small>
+                </div>
+              </div>
+
+              <!-- Search & Filter Bar -->
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="formulaSearchInput" class="form-control border-start-0"
+                      placeholder="Cari nama rumus (contoh: By Nara)...">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <select id="formulaTypeFilter" class="form-select">
+                    <option value="all">Semua Tipe (Weapon & Armor)</option>
+                    <option value="Weapon">Weapon (Senjata)</option>
+                    <option value="Armor">Armor (Zirah)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Grid Cards -->
+              <div id="formulasGrid" class="row g-4">
+                <!-- Cards akan di-generate di sini oleh JS -->
+              </div>
+
+              <!-- Empty State -->
+              <div id="formulasEmptyState" class="text-center py-5 d-none">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="text-muted mt-3">Belum ada rumus yang disimpan atau tidak ditemukan.</p>
               </div>
             </div>
-            
-            <!-- 8 Slots akan di-generate oleh JS di sini -->
-            <div id="slotsContainer" class="mb-3"></div>
-
-            <div class="d-flex gap-2 justify-content-center mt-3">
-              <button id="confirmButton" class="btn btn-success flex-fill" disabled>✅ Confirm</button>
-              <button id="repeatButton" class="btn btn-warning flex-fill" disabled>🔄 Repeat</button>
-              <button id="undoButton" class="btn btn-secondary flex-fill" disabled>↶ Undo</button>
-              <button id="redoButton" class="btn btn-info flex-fill text-white" disabled>↷ Redo</button>
-            </div>
-            <div class="text-center mt-2">
-              <small class="text-muted fst-italic">Tips: Gunakan tombol A (Max), S (Step+Confirm), D (Min), F (Fill), R (Undo)</small>
-            </div>
           </div>
-        </div>
-
-        <!-- Kolom Kanan: Hasil & Material -->
-        <div class="col-lg-5">
-          <div class="p-3 border rounded bg-white mb-3">
-            <h6 class="fw-bold mb-3 border-bottom pb-2">📊 Langkah-langkah</h6>
-            <div id="formulaDisplay" class="small" style="max-height: 250px; overflow-y: auto; line-height: 1.6;">
-              <em class="text-muted">Belum ada langkah yang dilakukan.</em>
-            </div>
-          </div>
-
-          <div class="p-3 border rounded bg-white">
-            <h6 class="fw-bold mb-3 border-bottom pb-2">💎 Biaya Material</h6>
-            <div class="table-responsive">
-              <table class="table table-sm table-borderless mb-0" id="materialTable">
-                <tbody>
-                  <!-- Diisi oleh JS -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div> <!-- End Workspace -->
-
-  </div>
-</div>
-
         </div>
       </div>
     </div>
@@ -394,18 +446,19 @@
     </div>
   </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/transition.js"></script>
-  
+
   <!-- Logika Core Fill Stat (Jangan diubah) -->
   <script src="js/math.js"></script>
   <script src="js/t4stat.js"></script>
-  
+
   <!-- Integrasi UI Bootstrap -->
   <script src="js/fillstat-ui.js"></script>
-  
+
   <!-- Logika Tools Lainnya (MQ Calc, Materials) -->
   <script src="js/tools.js"></script>
 </body>
+
 </html>

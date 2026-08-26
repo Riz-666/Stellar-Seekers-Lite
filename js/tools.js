@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
       sidebarButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       toolViews.forEach(view => view.classList.add('d-none'));
-      
+
       const targetId = btn.getAttribute('data-target');
       const targetView = document.getElementById(targetId);
       if (targetView) {
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ===== 2. LOGIKA MQ CALCULATOR =====
   const LV_CAP = 315;
-  
+
   const QUEST_DATA = [
     { Name: "First Time Visit", Chapter: 1, Episode: 1, Boss: "-", EXP: 30 },
     { Name: "Straye Brother and Sister", Chapter: 1, Episode: 2, Boss: "Boss Colon", EXP: 80 },
@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fromSelect = document.getElementById('mqFrom');
     const untilSelect = document.getElementById('mqUntil');
     if (!fromSelect || !untilSelect) return;
-    
+
     fromSelect.innerHTML = '';
     untilSelect.innerHTML = '';
 
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lv = parseInt(document.getElementById('currentLvl').value) || 1;
     const pct = parseInt(document.getElementById('currentPct').value) || 0;
     const target = parseInt(document.getElementById('targetLvl').value) || LV_CAP;
-    
+
     const xpRequired = getTotalXP(lv, pct, target);
     const resExpReq = document.getElementById('resExpReq');
     if (resExpReq) resExpReq.textContent = xpRequired.toLocaleString();
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const resQuestExpText = document.getElementById('resQuestExpText');
       if (resQuestExpText) resQuestExpText.textContent = mqXP.toLocaleString() + ' EXP';
-      
+
       const [nLv, nLvP] = addXP(lv, pct, mqXP);
       const resEvaluationText = document.getElementById('resEvaluationText');
       if (resEvaluationText) resEvaluationText.textContent = `Lv.${nLv} (${nLvP}%)`;
@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tableBody) return;
     tableBody.innerHTML = '';
     const targetLvl = parseInt(document.getElementById('targetLvl').value) || LV_CAP;
-    
+
     let curLv = startLv, curPct = startPct, runs = 0;
     while (runs < 200) {
       runs++;
@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  window.changeMatPage = function(page) {
+  window.changeMatPage = function (page) {
     currentPageMat = page;
     renderMaterialsTable();
   };
@@ -396,12 +396,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const searchVal = searchEl ? searchEl.value.toLowerCase() : '';
     const chapterVal = chapterEl ? chapterEl.value : 'Semua';
-    
+
     const filtered = mqMaterialsData.filter(item => {
-      const matchSearch = item.name_id.toLowerCase().includes(searchVal) || 
-                          item.name_en.toLowerCase().includes(searchVal) || 
-                          item.chapter.toLowerCase().includes(searchVal) ||
-                          item.quest_name.toLowerCase().includes(searchVal);
+      const matchSearch = item.name_id.toLowerCase().includes(searchVal) ||
+        item.name_en.toLowerCase().includes(searchVal) ||
+        item.chapter.toLowerCase().includes(searchVal) ||
+        item.quest_name.toLowerCase().includes(searchVal);
       const matchChapter = chapterVal === 'Semua' || item.chapter === chapterVal;
       return matchSearch && matchChapter;
     });
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const totalPages = Math.ceil(filtered.length / itemsPerPageMat) || 1;
     if (currentPageMat > totalPages) currentPageMat = totalPages;
-    
+
     const start = (currentPageMat - 1) * itemsPerPageMat;
     const paginatedData = filtered.slice(start, start + itemsPerPageMat);
 
@@ -427,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const itemName = currentLang === 'id' ? item.name_id : item.name_en;
         const subName = currentLang === 'id' ? item.name_en : item.name_id;
         const langLabel = currentLang === 'id' ? 'EN' : 'ID';
-        
+
         const row = document.createElement('tr');
         row.innerHTML = `
           <td class="text-center fw-bold text-muted">${start + index + 1}</td>
@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (paginationInfo) {
       paginationInfo.textContent = `Menampilkan ${filtered.length > 0 ? start + 1 : 0}-${Math.min(start + itemsPerPageMat, filtered.length)} dari ${filtered.length} data`;
     }
-    
+
     const paginationControls = document.getElementById('paginationControls');
     if (paginationControls) {
       paginationControls.innerHTML = '';
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const toggleLangBtn = document.getElementById('toggleLangBtn');
   if (toggleLangBtn) {
-    toggleLangBtn.addEventListener('click', function() {
+    toggleLangBtn.addEventListener('click', function () {
       currentLang = currentLang === 'id' ? 'en' : 'id';
       this.innerHTML = currentLang === 'id' ? '<i class="bi bi-translate me-2"></i>Ganti ke Bahasa Inggris' : '<i class="bi bi-translate me-2"></i>Ganti ke Bahasa Indonesia';
       renderMaterialsTable();
