@@ -587,3 +587,81 @@ body.page-leaving > *:not(#page-loader) {
     animation: none !important;
   }
 }
+
+
+
+/* ===== TORAM TOOLS STYLING ===== */
+.list-group-item {
+  border: none;
+  border-radius: 8px !important;
+  margin-bottom: 4px;
+  color: var(--gray-700);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.list-group-item:hover:not(:disabled) {
+  background-color: var(--blue-soft);
+  color: var(--blue-dark);
+}
+
+.list-group-item.active {
+  background-color: var(--blue-dark);
+  color: white;
+  border-color: var(--blue-dark);
+}
+
+.list-group-item:disabled {
+  cursor: not-allowed;
+  background-color: transparent;
+}
+
+.tool-view {
+  display: block;
+}
+
+.tool-view.d-none {
+  display: none;
+}
+
+/* Custom scrollbar untuk tabel */
+.table-responsive::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.table-responsive::-webkit-scrollbar-track {
+  background: var(--gray-100);
+  border-radius: 3px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 3px;
+}
+
+/* ===== MQ MATERIALS TABLE STYLING ===== */
+.table-responsive {
+  background: white;
+}
+
+.table thead.sticky-top {
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.page-link {
+  color: var(--blue-dark);
+  border: 1px solid var(--gray-200);
+  margin: 0 2px;
+  border-radius: 6px !important;
+}
+
+.page-item.active .page-link {
+  background-color: var(--blue-dark);
+  border-color: var(--blue-dark);
+  color: white;
+}
+
+.page-link:hover {
+  background-color: var(--blue-soft);
+  color: var(--blue-dark);
+}
