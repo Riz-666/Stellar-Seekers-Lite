@@ -1,4 +1,4 @@
-// js/toram-api.js - Final Hybrid Version with Smart Icon Fallback
+// js/toram-api.js - Unified Type/Icon Detection Version
 window.ToramSheets = (function () {
   'use strict';
 
@@ -7,55 +7,127 @@ window.ToramSheets = (function () {
   var BASE_URL = 'https://coryn.club/api/v1';
   var CACHE_TTL = 24 * 60 * 60 * 1000; // 24 jam
 
-  // ============================================================
-  // SMART ICON FALLBACK (Diadaptasi dari sheets.js asli kamu)
-  // ============================================================
   var ICON_BASE = (function () {
     var path = window.location.pathname;
     if (path.indexOf('/pages/') !== -1) return '../img/icons/';
     return 'img/icons/';
   }());
 
-  var TYPE_ICONS = {
-  '1-handed sword': '1h_ico.png',
-  '2-handed sword': '2h_ico.png',
-  'katana': 'ktn_ico.png',
-  'bow': 'bow_ico.png',
-  'bowgun': 'bwg_ico.png',
-  'staff': 'stf_ico.png',
-  'magic device': 'md_ico.png',
-  'knuckles': 'knu_ico.png',
-  'halberd': 'hb_ico.png',
-  'dagger': 'dagger_ico.png',
-  'armor': 'armor_ico.png',
-  'shield': 'shield_ico.png',
-  'additional': 'add_ico.png',
-  'special': 'special_ico.png',
-  'ring': 'special_ico.png',
-  'material': 'items_ico.png',
-  'consumable': 'medicine_ico.png'
-};
+  // ============================================================
+  // SINGLE SOURCE OF TRUTH: type_label -> kategori
+  // Regex dibuat fleksibel: nerima spasi ATAU strip ("2 Handed Sword",
+  // "2-Handed Sword", "two-handed sword", dst semua ke-cover).
+  // ============================================================
+  function normalizeType(type) {
+    return (type || '').toLowerCase().replace(/[\[\]]/g, '').trim();
+  }
 
-  function resolveIcon(type, name) {
-    var t = (type || '').toLowerCase().trim();
-    var n = (name || '').toLowerCase().trim();
-    if (/\bore\b/i.test(n)) return ICON_BASE + 'ore_ico.png';
-    
-    var icon = TYPE_ICONS[t];
-    if (!icon) {
-      if (t.indexOf('boss') !== -1 || t === 'monster' || t === 'mob') icon = 'monsters_ico.png';
-      else if (t.indexOf('quest') !== -1) icon = 'quest_ico.png';
-      else if (t.indexOf('pet') !== -1) icon = 'pets_ico.png';
-      else icon = 'items_ico.png'; // Default ultimate fallback
+  function typeToCategory(type) {
+    var t = normalizeType(type);
+    if (!t) return 'other';
+
+    if (/\b1[\s-]?handed\b/.test(t) || /\bone[\s-]?hand(ed)?\b/.test(t)) return '1-handed sword';
+    if (/\b2[\s-]?handed\b/.test(t) || /\btwo[\s-]?hand(ed)?\b/.test(t)) return '2-handed sword';
+    if (/\bkatana\b/.test(t)) return 'katana';
+    if (/\bbowgun\b/.test(t)) return 'bowgun'; // cek sebelum 'bow' polos
+    if (/\bbow\b/.test(t)) return 'bow';
+    if (/\bstaff\b/.test(t)) return 'staff';
+    if (/\bmagic device\b/.test(t)) return 'magic device';
+    if (/\bknuckle/.test(t)) return 'knuckles';
+    if (/\bhalberd\b/.test(t)) return 'halberd';
+    if (/\bdagger\b/.test(t)) return 'dagger';
+    if (/\bshield\b/.test(t)) return 'shield';
+
+    // Crysta: cek kategori eksplisit dulu, baru fallback ke warna dalam kurung
+    if (/\bweapon crysta\b/.test(t)) return 'weapon crysta';
+    if (/\barmor crysta\b/.test(t)) return 'armor crysta';
+    if (/\bspecial crysta\b/.test(t)) return 'special crysta';
+    if (/\badd(itional)? crysta\b/.test(t)) return 'additional crysta';
+    if (/\bcrysta\b/.test(t)) {
+      var colorMatch = t.match(/\(([^)]+)\)/);
+      if (colorMatch) {
+        var color = colorMatch[1].trim();
+        if (color === 'green') return 'armor crysta';
+        if (color === 'red') return 'weapon crysta';
+        if (color === 'yellow') return 'additional crysta';
+        if (color === 'purple') return 'special crysta';
+      }
+      return 'enhancer crysta';
     }
-    return ICON_BASE + icon;
+
+    if (/\barmor\b/.test(t)) return 'armor';
+    if (/\badditional\b/.test(t)) return 'additional';
+    if (/\bring\b/.test(t)) return 'ring';
+    if (/\bspecial\b/.test(t)) return 'special';
+    if (/\bmaterial\b|\bore\b|\bmetal\b|\bingot\b|\bcloth\b|\bfabric\b|\bthread\b|\byarn\b|\bwood\b|\blumber\b|\blog\b|\bbeast\b|\bhide\b|\bfur\b|\bleather\b|\bbone\b|\bhorn\b|\bfang\b|\bclaw\b|\bmana\b/.test(t)) return 'material';
+    if (/\bconsumable\b|\bmedicine\b|\bpotion\b|\bherb\b/.test(t)) return 'consumable';
+
+    return 'other';
+  }
+
+  // Kategori crysta versi pendek, dipakai buat nama file icon (crysta_XXX_tier.png)
+  function getCrystaCategory(type) {
+    var cat = typeToCategory(type);
+    if (cat === 'weapon crysta') return 'weapon';
+    if (cat === 'armor crysta') return 'armor';
+    if (cat === 'special crysta') return 'special';
+    if (cat === 'additional crysta') return 'add';
+    if (cat === 'enhancer crysta') return 'normal';
+    return null; // bukan crysta
+  }
+
+  // Deteksi sub-tipe material dari gabungan type + name (whole-word, case-insensitive)
+  function resolveMaterialIcon(type, name) {
+    var haystack = ((type || '') + ' ' + (name || '')).toLowerCase();
+    if (/\bore\b/.test(haystack)) return 'ore_ico.png';
+    if (/\bmetal\b|\bingot\b/.test(haystack)) return 'metal_ico.png';
+    if (/\bcloth\b|\bfabric\b|\bthread\b|\byarn\b/.test(haystack)) return 'cloth_ico.png';
+    if (/\bwood\b|\blumber\b|\blog\b/.test(haystack)) return 'wood_ico.png';
+    if (/\bbeast\b|\bhide\b|\bfur\b|\bleather\b|\bbone\b|\bhorn\b|\bfang\b|\bclaw\b/.test(haystack)) return 'beast_ico.png';
+    if (/\bmana\b/.test(haystack)) return 'mana_ico.png';
+    if (/\bmedicine\b|\bpotion\b|\bherb\b/.test(haystack)) return 'medicine_ico.png';
+    return null;
+  }
+
+  // Nama file icon (tanpa path) untuk kategori manapun. Dipakai grid & modal,
+  // jadi hasilnya SELALU konsisten di semua tempat.
+  function getItemIconFile(type, name, tier) {
+    var cat = typeToCategory(type);
+    switch (cat) {
+      case '1-handed sword': return '1h_ico.png';
+      case '2-handed sword': return '2h_ico.png';
+      case 'katana': return 'ktn_ico.png';
+      case 'bow': return 'bow_ico.png';
+      case 'bowgun': return 'bwg_ico.png';
+      case 'staff': return 'stf_ico.png';
+      case 'magic device': return 'md_ico.png';
+      case 'knuckles': return 'knu_ico.png';
+      case 'halberd': return 'hb_ico.png';
+      case 'dagger': return 'dagger_ico.png';
+      case 'armor': return 'armor_ico.png';
+      case 'shield': return 'shield_ico.png';
+      case 'additional': return 'add_ico.png';
+      case 'special':
+      case 'ring': return 'special_ico.png';
+      case 'material': return resolveMaterialIcon(type, name) || 'items_ico.png';
+      case 'consumable': return 'medicine_ico.png';
+      case 'weapon crysta':
+      case 'armor crysta':
+      case 'special crysta':
+      case 'additional crysta':
+      case 'enhancer crysta': {
+        var c = getCrystaCategory(type) || 'normal';
+        return 'crysta_' + c + '_' + (tier || 'base') + '.png';
+      }
+      default: return 'items_ico.png';
+    }
   }
 
   // ============================================================
   // CORE API FUNCTIONS
   // ============================================================
   async function fetchAllItemsFromAPI() {
-    const cacheKey = 'coryn_all_items_v6'; // Upgrade ke v6 agar cache lama yang error ter-reset
+    const cacheKey = 'coryn_all_items_v6';
     const cacheTimeKey = 'coryn_all_items_time_v6';
 
     try {
@@ -90,13 +162,13 @@ window.ToramSheets = (function () {
         }
 
         allRawItems = allRawItems.concat(json.data);
-        
+
         const loadingStatus = document.getElementById('loadingStatus');
         if (loadingStatus) loadingStatus.textContent = `Memuat ${allRawItems.length} dari ${total} item...`;
 
         offset += limit;
         if (allRawItems.length >= total) break;
-        await new Promise(r => setTimeout(r, 50)); // Jeda agar tidak di-blokir
+        await new Promise(r => setTimeout(r, 50));
       } catch (err) {
         console.error("Batch fetch error:", err);
         break;
@@ -123,7 +195,7 @@ window.ToramSheets = (function () {
       const response = await fetch(url);
       if (!response.ok) throw new Error("HTTP " + response.status);
       const json = await response.json();
-      
+
       if (json.success && json.data) {
         localStorage.setItem(cacheKey, JSON.stringify(json.data));
         return json.data;
@@ -144,7 +216,7 @@ window.ToramSheets = (function () {
       return [];
     }
 
-    return itemsToProcess.map(function(item) {
+    return itemsToProcess.map(function (item) {
       var isEvent = false;
       var badge = '';
       if (item.meta && item.meta.badge) {
@@ -177,7 +249,6 @@ window.ToramSheets = (function () {
         if (!dropSource) dropSource = 'Craft NPC';
       }
 
-      // IMAGE URL: Format sesuai observasi kamu (hanya replace spasi)
       var imageUrl = '';
       if (item.id) {
         var safeName = (item.name || 'unknown').replace(/ /g, '%20');
@@ -218,7 +289,7 @@ window.ToramSheets = (function () {
       dataState.fullData = normalizedData;
       dataState.pageType = page;
       dataState.containerId = containerId;
-      
+
       document.dispatchEvent(new CustomEvent('sheetsdataready', {
         detail: { data: normalizedData, page: page, containerId: containerId }
       }));
@@ -231,72 +302,12 @@ window.ToramSheets = (function () {
     return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  // FUNGSI ICON HTML DENGAN SMART FALLBACK
+  // FUNGSI ICON HTML — sekarang tinggal manggil getItemIconFile, gak ada logic duplikat lagi
   function iconHTML(imageURL, icon, type, altText, source, fit) {
-  // PRIORITAS: Gunakan icon lokal dari folder img/icons/
-  var t = (type || '').toLowerCase().trim();
-  var fallbackImg = 'img/icons/items_ico.png';
-  
-  // Mapping ke file icon yang sudah ada di folder kamu
-  if (t.includes('1-handed sword') || t.includes('one-hand sword')) fallbackImg = 'img/icons/1h_ico.png';
-  else if (t.includes('2-handed sword') || t.includes('two-hand sword')) fallbackImg = 'img/icons/2h_ico.png';
-  else if (t === 'katana') fallbackImg = 'img/icons/ktn_ico.png';
-  else if (t === 'bow') fallbackImg = 'img/icons/bow_ico.png';
-  else if (t === 'bowgun') fallbackImg = 'img/icons/bwg_ico.png';
-  else if (t === 'staff') fallbackImg = 'img/icons/stf_ico.png';
-  else if (t === 'magic device') fallbackImg = 'img/icons/md_ico.png';
-  else if (t === 'knuckles') fallbackImg = 'img/icons/knu_ico.png';
-  else if (t === 'halberd') fallbackImg = 'img/icons/hb_ico.png';
-  else if (t === 'dagger') fallbackImg = 'img/icons/dagger_ico.png';
-  else if (t.includes('armor')) fallbackImg = 'img/icons/armor_ico.png';
-  else if (t === 'shield') fallbackImg = 'img/icons/shield_ico.png';
-  else if (t === 'additional') fallbackImg = 'img/icons/add_ico.png';
-  else if (t === 'special' || t === 'ring') fallbackImg = 'img/icons/special_ico.png';
-  else if (t.includes('material') || t.includes('ore')) fallbackImg = 'img/icons/items_ico.png';
-  
-  // Crysta detection (Enhancer/Weapon/Armor/Additional/Special Crysta)
-  if (t.indexOf('crysta') !== -1) {
-    var crystaCat = 'normal';
-    if (t.indexOf('weapon crysta') !== -1) crystaCat = 'weapon';
-    else if (t.indexOf('armor crysta') !== -1) crystaCat = 'armor';
-    else if (t.indexOf('special crysta') !== -1) crystaCat = 'special';
-    else if (t.indexOf('additional crysta') !== -1 || t.indexOf('add crysta') !== -1) crystaCat = 'add';
-    fallbackImg = 'img/icons/crysta_' + crystaCat + '_base.png';
+    var fallbackImg = ICON_BASE + getItemIconFile(type, altText);
+    var objectFit = fit || 'contain';
+    return '<img src="' + fallbackImg + '" alt="' + esc(altText) + '" style="width:100%;height:100%;object-fit:' + objectFit + ';border-radius:inherit" onerror="this.onerror=null;this.src=\'' + ICON_BASE + 'items_ico.png\';" />';
   }
-
-  var objectFit = fit || 'contain';
-  
-  // Jangan coba load dari Coryn, langsung pakai icon lokal
-  return '<img src="' + fallbackImg + '" alt="' + esc(altText) + '" style="width:100%;height:100%;object-fit:' + objectFit + ';border-radius:inherit" onerror="this.onerror=null;this.src=\'img/icons/items_ico.png\';" />';
-}
-
-  function typeToCategory(type) {
-  var t = (type || '').toLowerCase().trim();
-  // Return value yang SAMA PERSIS dengan dropdown
-  if (t.indexOf('1-handed sword') !== -1 || t.indexOf('one-hand sword') !== -1) return '1-handed sword';
-  if (t.indexOf('2-handed sword') !== -1 || t.indexOf('two-hand sword') !== -1) return '2-handed sword';
-  if (t === 'katana') return 'katana';
-  if (t === 'bow') return 'bow';
-  if (t === 'bowgun') return 'bowgun';
-  if (t === 'staff') return 'staff';
-  if (t === 'magic device') return 'magic device';
-  if (t === 'knuckles') return 'knuckles';
-  if (t === 'halberd') return 'halberd';
-  if (t === 'dagger') return 'dagger';
-  if (t === 'armor' || t.indexOf('armor') !== -1) return 'armor';
-  if (t === 'shield') return 'shield';
-  if (t === 'additional') return 'additional';
-  if (t === 'special') return 'special';
-  if (t === 'ring') return 'ring';
-  if (t === 'material') return 'material';
-  if (t === 'consumable') return 'consumable';
-  if (t.indexOf('weapon crysta') !== -1) return 'weapon crysta';
-  if (t.indexOf('armor crysta') !== -1) return 'armor crysta';
-  if (t.indexOf('special crysta') !== -1) return 'special crysta';
-  if (t.indexOf('additional crysta') !== -1) return 'additional crysta';
-  if (t.indexOf('crysta') !== -1) return 'enhancer crysta';
-  return 'other';
-}
 
   return {
     CONFIG: CONFIG,
@@ -305,6 +316,10 @@ window.ToramSheets = (function () {
     fetchItemFullDetails: fetchItemFullDetails,
     esc: esc,
     iconHTML: iconHTML,
-    typeToCategory: typeToCategory
+    typeToCategory: typeToCategory,
+    getCrystaCategory: getCrystaCategory,
+    resolveMaterialIcon: resolveMaterialIcon,
+    getItemIconFile: getItemIconFile,
+    ICON_BASE: ICON_BASE
   };
 }());
