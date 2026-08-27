@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Trait — Stellar Seekers</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .trait-card {
+      cursor: pointer;
+      background: white;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-100);
+      overflow: hidden;
+      height: 100%;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .trait-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--blue-light);
+    }
+
+    .trait-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 1rem 1.1rem;
+    }
+
+    .trait-card-header h6 {
+      color: var(--blue-dark);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-right: 0.5rem;
+    }
+
+    .trait-chevron {
+      color: var(--gray-500);
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .trait-chevron.rotated {
+      transform: rotate(180deg);
+      color: var(--blue-light);
+    }
+
+    .trait-card-body {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 1.1rem;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      border-top: 1px solid transparent;
+    }
+
+    .trait-card-body.open {
+      max-height: 400px;
+      padding: 0 1.1rem 1.1rem 1.1rem;
+      border-top: 1px solid var(--gray-100);
+      padding-top: 0.85rem;
+    }
+
+    .trait-card-body p {
+      color: var(--gray-700);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    /* Tier badges — makin tinggi tier makin "mewah" warnanya */
+    .tier-0 {
+      background-color: #f1f5f9 !important;
+      color: #475569 !important;
+    }
+
+    .tier-1 {
+      background-color: #dbeafe !important;
+      color: #1e40af !important;
+    }
+
+    .tier-2 {
+      background-color: #dcfce7 !important;
+      color: #166534 !important;
+    }
+
+    .tier-3 {
+      background-color: #fef3c7 !important;
+      color: #92400e !important;
+    }
+
+    .tier-4 {
+      background-color: #ffedd5 !important;
+      color: #9a3412 !important;
+    }
+
+    .tier-5 {
+      background-color: #f3e8ff !important;
+      color: #6b21a8 !important;
+    }
+
+    .trait-source-note {
+      font-size: 0.85rem;
+      color: var(--gray-500);
+    }
+  </style>
+</head>
+
+<body style="scroll-behavior: smooth;">
+
+  <!-- PAGE LOADER -->
+  <div id="page-loader">
+    <div class="loader-orbit">
+      <div class="loader-core"></div>
+      <div class="loader-ring"><span class="loader-moon"></span></div>
+    </div>
+    <p class="loader-label">Stellar Seekers</p>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg fixed-top" id="mainNavbar">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-3" href="index.html">
+        <div class="logo-placeholder">
+          <img src="https://via.placeholder.com/80x80/1e3a8a/ffffff?text=SS" alt="Logo">
+        </div>
+        <span>Stellar Seekers</span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="tools.html">Toram Tools</a></li>
+          <li class="nav-item"><a class="nav-link" href="tools-items.html">Item</a></li>
+          <li class="nav-item"><a class="nav-link" href="monsters.html">Monster</a></li>
+          <li class="nav-item"><a class="nav-link active" href="trait.html">Trait</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <section class="section-padding" style="padding-top: 120px; min-height: 100vh; background-color: var(--gray-50);">
+    <div class="container">
+      <div class="text-center mb-4">
+        <h2 class="fw-bold display-5" style="color: var(--blue-dark);">Database Trait</h2>
+        <p class="text-muted fs-5 mb-1">Cari informasi ability/trait beserta tier dan efeknya. Klik kartu untuk
+          melihat deskripsi lengkap.</p>
+        <p class="trait-source-note mb-2" id="traitSourceInfo">Memuat info sumber data...</p>
+        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" data-bs-toggle="modal"
+          data-bs-target="#rulesModal">
+          <i class="bi bi-info-circle me-1"></i> Info Rules &amp; Mechanics
+        </button>
+      </div>
+
+      <!-- SEARCH & FILTER -->
+      <div class="form-card p-4 mb-4">
+        <div class="row g-3">
+          <div class="col-md-8">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" id="searchInput" class="form-control border-start-0"
+                placeholder="Cari nama trait atau kata kunci pada deskripsi...">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <select id="filterTier" class="form-select">
+              <option value="all">Semua Tier</option>
+              <option value="0">Tier 0</option>
+              <option value="1">Tier 1</option>
+              <option value="2">Tier 2</option>
+              <option value="3">Tier 3</option>
+              <option value="4">Tier 4</option>
+              <option value="5">Tier 5</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRAIT GRID -->
+      <div id="traitsGrid" class="row g-4">
+        <div class="col-12 text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="text-muted mt-2">Memuat data trait...</p>
+        </div>
+      </div>
+
+      <!-- PAGINATION -->
+      <nav class="mt-5" aria-label="Trait pagination">
+        <ul id="traitsPagination" class="pagination justify-content-center"></ul>
+      </nav>
+
+      <!-- EMPTY STATE -->
+      <div id="emptyState" class="text-center py-5 d-none">
+        <i class="bi bi-search fs-1 text-muted"></i>
+        <p class="text-muted mt-3">Trait tidak ditemukan.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container text-center pt-4 border-top"
+      style="border-color: rgba(255,255,255,0.1) !important; color: rgba(255,255,255,0.5);">
+      © 2026 Stellar Seekers. Made By Naraya◦.
+    </div>
+  </footer>
+
+  <!-- RULES & MECHANICS MODAL -->
+  <div class="modal fade" id="rulesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content" style="border: none; border-radius: var(--radius-lg); overflow: hidden;">
+        <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, var(--blue-soft), white);">
+          <h5 class="modal-title fw-bold" style="color: var(--blue-dark);">
+            <i class="bi bi-info-circle me-2"></i>Rules &amp; Mechanics
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4" id="rulesModalBody">
+          <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2 mb-0">Memuat data rules & mechanics...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/transition.js"></script>
+  <script src="js/trait.js"></script>
+</body>
+
+</html>
