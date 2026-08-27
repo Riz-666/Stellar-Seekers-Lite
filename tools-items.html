@@ -113,28 +113,25 @@
           </div>
           <div class="col-md-3">
             <select id="filterType" class="form-select">
-              <option value="all">Semua Tipe</option>
-              <option value="1h-sword">1H Sword</option>
-              <option value="2h-sword">2H Sword</option>
-              <option value="katana">Katana</option>
-              <option value="bow">Bow</option>
-              <option value="bowgun">Bowgun</option>
-              <option value="staff">Staff</option>
-              <option value="md">Magic Device</option>
-              <option value="knuckles">Knuckles</option>
-              <option value="halberd">Halberd</option>
-              <option value="dagger">Dagger</option>
-              <option value="armor">Armor</option>
-              <option value="shield">Shield</option>
-              <option value="additional">Additional</option>
-              <option value="special">Special / Ring</option>
-              <option value="crysta-weapon">Weapon Crysta</option>
-              <option value="crysta-armor">Armor Crysta</option>
-              <option value="crysta-add">Additional Crysta</option>
-              <option value="crysta-special">Special Crysta</option>
-              <option value="crysta-normal">Normal Crysta</option>
-              <option value="material">Material</option>
-            </select>
+  <option value="all">Semua Tipe</option>
+  <option value="1-handed sword">1H Sword</option>
+  <option value="2-handed sword">2H Sword</option>
+  <option value="katana">Katana</option>
+  <option value="bow">Bow</option>
+  <option value="bowgun">Bowgun</option>
+  <option value="staff">Staff</option>
+  <option value="magic device">Magic Device</option>
+  <option value="knuckles">Knuckles</option>
+  <option value="halberd">Halberd</option>
+  <option value="dagger">Dagger</option>
+  <option value="armor">Armor</option>
+  <option value="shield">Shield</option>
+  <option value="additional">Additional</option>
+  <option value="special">Special</option>
+  <option value="ring">Ring</option>
+  <option value="material">Material</option>
+  <option value="consumable">Consumable</option>
+</select>
           </div>
           <div class="col-md-2">
             <select id="filterRarity" class="form-select">
@@ -154,7 +151,9 @@
         </div>
         <!-- Result count -->
         <div class="mt-3">
-          <small id="resultCount" class="text-muted">Memuat data...</small>
+          <p id="loadingStatus" class="text-center text-primary fw-bold mt-4">
+            <span class="spinner-border spinner-border-sm me-2"></span> Menghubungkan ke database Coryn Club...
+          </p>
         </div>
       </div>
 
@@ -262,269 +261,367 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/transition.js"></script>
-  <script src="js/sheets.js"></script>
+  <script src="js/toram-api.js"></script>
+  <!-- <script src="js/sheets.js"></script> -->
   <script src="js/modal.js"></script>
-
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    // Buat alias fungsi esc agar bisa dipanggil langsung
+  var esc = function(str) {
+    return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  };
+    let allData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    const itemsPerPage = 12;
 
-      // ===== STATE PAGINATION =====
-      let allData = [];
-      let filteredData = [];
-      let currentPage = 1;
-      const itemsPerPage = 12;
+    const loadingStatus = document.getElementById('loadingStatus');
+    const itemsGrid = document.getElementById('itemsGrid');
+    const emptyState = document.getElementById('emptyState');
 
-      // ===== LOAD DATA DARI GOOGLE SHEETS =====
-      if (window.ToramSheets) {
-        window.ToramSheets.load('items', 'itemsGrid');
+    // 1. Load Data
+    if (window.ToramSheets) {
+      if (loadingStatus) loadingStatus.textContent = "Menghubungkan ke database Coryn Club...";
+      window.ToramSheets.load('items', 'itemsGrid');
+    }
 
-        document.addEventListener('sheetsdataready', function (e) {
-          if (e.detail.page === 'items') {
-            allData = e.detail.data;
-            filteredData = [...allData];
-            currentPage = 1;
-            renderCurrentPage();
-          }
-        });
-      }
-
-      // ===== RENDER ITEMS (hanya data halaman ini) =====
-      function renderItems(items) {
-        const grid = document.getElementById('itemsGrid');
-        const emptyState = document.getElementById('emptyState');
-        grid.innerHTML = '';
-
-        if (items.length === 0) {
-          emptyState.classList.remove('d-none');
-          grid.style.display = 'none';
-          return;
-        }
-        emptyState.classList.add('d-none');
-        grid.style.display = 'flex';
-
-        items.forEach(item => {
-          const name = item['Name'] || '';
-          const type = item['Type'] || '';
-          const level = item['Level'] || '';
-          const stats = item['Stats'] || '';
-          const rarity = item['Rarity'] || '';
-          const source = item['Source'] || '';
-          const icon = item['Icon'] || '';
-          const imgURL = item['ImageURL'] || '';
-
-          const lvlText = level && level !== '0' ? ` · Lv.${level}` : '';
-
-          // Rarity badge
-          let rarityBadge = '';
-          const rarityLower = rarity.toLowerCase();
-          if (rarityLower.includes('non-event')) {
-            rarityBadge = '<span class="badge bg-secondary">Non-Event</span>';
-          } else if (rarityLower.includes('event')) {
-            rarityBadge = '<span class="badge bg-warning text-dark">Event</span>';
-          }
-
-          // Source badges
-          const sourceLower = source.toLowerCase();
-          let sourceBadges = '';
-          if (sourceLower.includes('drop')) {
-            sourceBadges += '<span class="badge bg-info text-dark"><i class="bi bi-bug me-1"></i>Drop</span>';
-          }
-          if (sourceLower.includes('craft npc') || sourceLower.includes('blacksmith npc')) {
-            sourceBadges += '<span class="badge bg-success"><i class="bi bi-hammer me-1"></i>Craft NPC</span>';
-          }
-          if (sourceLower.includes('craft player') || sourceLower.includes('player craft')) {
-            sourceBadges += '<span class="badge bg-primary"><i class="bi bi-person me-1"></i>Craft Player</span>';
-          }
-
-          const card = document.createElement('div');
-          card.className = 'col-md-3 col-sm-6 fade-in-up';
-          card.innerHTML = `
-            <div class="item-card card h-100" data-item-name="${name.replace(/"/g, '&quot;')}">
-              <div class="card-body p-3">
-                <div class="d-flex align-items-center gap-3 mb-3">
-                  <div class="bg-light rounded p-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-size: 1.5rem;">
-                    ${window.ToramSheets.iconHTML(imgURL, icon, type, name)}
-                  </div>
-                  <div>
-                    <h6 class="fw-bold mb-0 text-truncate" style="color: var(--blue-dark); max-width: 150px;" title="${name}">${name}</h6>
-                    <small class="text-muted">${type}${lvlText}</small>
-                  </div>
-                </div>
-                <div class="d-flex flex-wrap gap-1 mb-2">
-                  ${rarityBadge}
-                  ${sourceBadges}
-                  ${stats ? `<span class="badge bg-light text-dark border">Base: ${stats.split(';')[0]}</span>` : ''}
-                </div>
-                <small class="text-muted d-block text-truncate" title="${source}">${source ? '📍 ' + source : ''}</small>
-              </div>
-            </div>
-          `;
-          grid.appendChild(card);
-        });
-
-        // Event delegation untuk klik card (modal)
-        grid.querySelectorAll('.item-card').forEach(card => {
-          card.addEventListener('click', function () {
-            const itemName = this.getAttribute('data-item-name');
-            if (itemName && window.ItemModal) {
-              window.ItemModal.open(itemName);
-            }
-          });
-        });
-      }
-
-      // ===== RENDER HALAMAN SAAT INI =====
-      function renderCurrentPage() {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const pageData = filteredData.slice(startIndex, endIndex);
-
-        // Update result count
-        const resultCount = document.getElementById('resultCount');
-        if (resultCount) {
-          resultCount.textContent = `Menampilkan ${startIndex + 1}–${Math.min(endIndex, filteredData.length)} dari ${filteredData.length} item`;
-        }
-
-        renderItems(pageData);
-        renderPaginationControls();
-      }
-
-      // ===== GENERATE TOMBOL PAGINATION =====
-      function renderPaginationControls() {
-        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-        const paginationNav = document.getElementById('paginationNav');
-        const paginationControls = document.getElementById('paginationControls');
-        const pageInfo = document.getElementById('pageInfo');
-
-        if (totalPages <= 1) {
-          paginationNav.style.display = 'none';
-          return;
-        }
-
-        paginationNav.style.display = 'block';
-        paginationControls.innerHTML = '';
-
-        if (pageInfo) {
-          pageInfo.textContent = `Halaman ${currentPage} dari ${totalPages}`;
-        }
-
-        // --- Helper: buat tombol halaman ---
-        function createPageButton(label, page, isActive, isDisabled) {
-          const li = document.createElement('li');
-          li.className = `page-item ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`;
-          li.innerHTML = `<a class="page-link" href="#" data-page="${page}">${label}</a>`;
-          return li;
-        }
-
-        // 1. First «
-        paginationControls.appendChild(createPageButton('«', 'first', false, currentPage === 1));
-
-        // 2. Prev ‹
-        paginationControls.appendChild(createPageButton('‹', 'prev', false, currentPage === 1));
-
-        // 3. Angka halaman dengan ellipsis logic
-        const maxVisible = 5;
-        let startPage, endPage;
-
-        if (totalPages <= maxVisible) {
-          startPage = 1;
-          endPage = totalPages;
-        } else {
-          const halfVisible = Math.floor(maxVisible / 2);
-          startPage = Math.max(1, currentPage - halfVisible);
-          endPage = Math.min(totalPages, currentPage + halfVisible);
-
-          if (currentPage <= halfVisible) {
-            endPage = maxVisible;
-          }
-          if (currentPage + halfVisible >= totalPages) {
-            startPage = totalPages - maxVisible + 1;
-          }
-        }
-
-        // Ellipsis before
-        if (startPage > 1) {
-          paginationControls.appendChild(createPageButton('1', 1, false, false));
-          if (startPage > 2) {
-            paginationControls.appendChild(createPageButton('…', 'none', false, true));
-          }
-        }
-
-        // Page numbers
-        for (let i = startPage; i <= endPage; i++) {
-          paginationControls.appendChild(createPageButton(i, i, i === currentPage, false));
-        }
-
-        // Ellipsis after
-        if (endPage < totalPages) {
-          if (endPage < totalPages - 1) {
-            paginationControls.appendChild(createPageButton('…', 'none', false, true));
-          }
-          paginationControls.appendChild(createPageButton(totalPages, totalPages, false, false));
-        }
-
-        // 4. Next ›
-        paginationControls.appendChild(createPageButton('›', 'next', false, currentPage === totalPages));
-
-        // 5. Last »
-        paginationControls.appendChild(createPageButton('»', 'last', false, currentPage === totalPages));
-
-        // Event listener klik
-        paginationControls.querySelectorAll('.page-link').forEach(link => {
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const action = e.target.getAttribute('data-page');
-            if (action === 'none') return; // disabled ellipsis
-
-            if (action === 'first') currentPage = 1;
-            else if (action === 'prev') currentPage = Math.max(1, currentPage - 1);
-            else if (action === 'next') currentPage = Math.min(totalPages, currentPage + 1);
-            else if (action === 'last') currentPage = totalPages;
-            else if (!isNaN(action)) currentPage = parseInt(action);
-
-            renderCurrentPage();
-            document.getElementById('itemsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          });
-        });
-      }
-
-      // ===== FILTER LOGIC =====
-      function applyFilters() {
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const type = document.getElementById('filterType').value;
-        const rarity = document.getElementById('filterRarity').value;
-        const source = document.getElementById('filterSource').value;
-
-        filteredData = allData.filter(item => {
-          const nameMatch = (item['Name'] || '').toLowerCase().includes(search);
-          const typeMatch = type === 'all' || window.ToramSheets.typeToCategory(item['Type']) === type;
-
-          const rLower = (item['Rarity'] || '').toLowerCase();
-          const rarityMatch = rarity === 'all'
-            || (rarity === 'event' && rLower.includes('event') && !rLower.includes('non'))
-            || (rarity === 'non-event' && rLower.includes('non-event'));
-
-          const sLower = (item['Source'] || '').toLowerCase();
-          let sourceMatch = source === 'all';
-          if (source === 'drop') sourceMatch = sLower.includes('drop');
-          if (source === 'craft-npc') sourceMatch = sLower.includes('npc') || sLower.includes('smith');
-          if (source === 'craft-player') sourceMatch = sLower.includes('player');
-
-          return nameMatch && typeMatch && rarityMatch && sourceMatch;
-        });
-
-        // Reset ke halaman 1 setiap filter berubah
+    document.addEventListener('sheetsdataready', function (e) {
+      if (e.detail.page === 'items') {
+        allData = e.detail.data;
+        filteredData = [...allData];
         currentPage = 1;
+        if (loadingStatus) loadingStatus.style.display = 'none';
         renderCurrentPage();
       }
-
-      // ===== EVENT LISTENERS =====
-      document.getElementById('searchInput').addEventListener('input', applyFilters);
-      document.getElementById('filterType').addEventListener('change', applyFilters);
-      document.getElementById('filterRarity').addEventListener('change', applyFilters);
-      document.getElementById('filterSource').addEventListener('change', applyFilters);
     });
-  </script>
+
+    // 2. Render Items (DESIGN BARU: LENGKAP & RAPI)
+    function renderItems(items) {
+  if (!itemsGrid) return;
+  itemsGrid.innerHTML = '';
+
+  if (items.length === 0) {
+    if (emptyState) emptyState.classList.remove('d-none');
+    itemsGrid.style.display = 'none';
+    return;
+  }
+  
+  if (emptyState) emptyState.classList.add('d-none');
+  itemsGrid.style.display = 'flex';
+
+      items.forEach(item => {
+      const name = item['Name'] || '';
+      const type = item['Type'] || '';
+      const statsList = item['StatsList'] || [];
+      const isEvent = item['IsEvent'] || false;
+      const badge = item['Badge'] || '';
+      const source = item['Source'] || '';
+      const dropSource = item['DropSource'] || '';
+      const note = item['Note'] || '';
+      const isUntradable = item['IsUntradable'] || false;
+      const sellPrice = item['SellSpina'] || 0;
+      const isCraftable = item['IsCraftable'] || false;
+      const craftAmount = item['CraftAmount'] || 0;
+      const imgURL = item['ImageURL'] || '';
+      const totalStats = item['TotalStats'] || 0;
+      
+      // DEBUG: Log image URL untuk item pertama
+      if (items.indexOf(item) === 0) {
+        console.log('First item:', name);
+        console.log('Image URL:', imgURL);
+        console.log('Item ID:', item.ID);
+      }
+
+    // --- BADGE EVENT/NON-EVENT ---
+    let eventBadge = '';
+    if (isEvent && badge) {
+      eventBadge = `<span class="badge bg-warning text-dark border border-warning">
+                      <i class="bi bi-star-fill me-1"></i>${esc(badge)}
+                    </span>`;
+    } else {
+      eventBadge = '<span class="badge bg-secondary">Non-Event</span>';
+    }
+
+    // --- BADGE UNTRADABLE ---
+    let untradableBadge = '';
+    if (isUntradable) {
+      untradableBadge = '<span class="badge bg-danger"><i class="bi bi-lock me-1"></i>Untradable</span>';
+    }
+
+        // --- STATS BOX (Updated for Lazy Load) ---
+    let statsHTML = '';
+    if (statsList.length > 0) {
+      // Fallback jika suatu saat stats ada di list
+      const displayStats = statsList.slice(0, 6); 
+      statsHTML = '<div class="stats-box p-2 mb-3 bg-light rounded border" style="max-height: 150px; overflow-y: auto; font-size: 0.7rem;">';
+      displayStats.forEach(s => {
+        const colorClass = s.value > 0 ? 'text-success fw-bold' : (s.value < 0 ? 'text-danger fw-bold' : 'fw-semibold');
+        statsHTML += `<div class="d-flex justify-content-between border-bottom border-light pb-1 mb-1">
+                        <span class="text-muted text-truncate me-2" title="${esc(s.name)}">${esc(s.name)}</span>
+                        <span class="${colorClass}">${s.display}</span>
+                      </div>`;
+      });
+      statsHTML += '</div>';
+    } else {
+      // PESAN BARU: Arahkan user untuk klik card
+      statsHTML = `
+        <div class="p-2 mb-3 bg-primary bg-opacity-10 rounded border border-primary text-center" style="font-size: 0.75rem;">
+          <i class="bi bi-bar-chart-line text-primary me-1"></i>
+          <span class="text-primary fw-semibold">Klik card untuk lihat complete stats & details</span>
+        </div>
+      `;
+    }
+
+    // --- SOURCE & DROP INFO ---
+    let sourceHTML = '';
+    if (dropSource || source) {
+      let sourceIcon = 'bi-box';
+      let sourceColor = 'secondary';
+      
+      const sourceLower = (dropSource || source).toLowerCase();
+      if (sourceLower.includes('drop') || sourceLower.includes('monster')) {
+        sourceIcon = 'bi-bug';
+        sourceColor = 'danger';
+      } else if (sourceLower.includes('craft') || sourceLower.includes('npc')) {
+        sourceIcon = 'bi-hammer';
+        sourceColor = 'success';
+      } else if (sourceLower.includes('shop')) {
+        sourceIcon = 'bi-shop';
+        sourceColor = 'info';
+      } else if (sourceLower.includes('quest')) {
+        sourceIcon = 'bi-journal-text';
+        sourceColor = 'warning';
+      }
+      
+      sourceHTML = `<div class="small mb-2">
+                      <i class="bi ${sourceIcon} text-${sourceColor} me-1"></i>
+                      <span class="text-muted">Source: </span>
+                      <span class="fw-semibold">${esc(dropSource || source)}</span>
+                    </div>`;
+    }
+
+    // --- NOTE (jika ada info tambahan) ---
+    let noteHTML = '';
+    if (note && !isUntradable) {
+      const shortNote = note.length > 80 ? note.substring(0, 80) + '...' : note;
+      noteHTML = `<div class="small text-muted fst-italic mb-2" title="${esc(note)}">
+                    <i class="bi bi-info-circle me-1"></i>${esc(shortNote)}
+                  </div>`;
+    }
+
+    // --- ECONOMY INFO (Sell & Process) ---
+    let economyHTML = '';
+    if (sellPrice > 0 || isCraftable) {
+      economyHTML = '<div class="d-flex gap-2 flex-wrap mb-2">';
+      if (sellPrice > 0) {
+        economyHTML += `<div class="badge bg-warning text-dark">
+                          <i class="bi bi-coin me-1"></i>${sellPrice} Spina
+                        </div>`;
+      }
+      if (isCraftable) {
+        economyHTML += `<div class="badge bg-success">
+                          <i class="bi bi-gear-fill me-1"></i>Process: ${craftAmount}
+                        </div>`;
+      }
+      economyHTML += '</div>';
+    }
+
+    // --- BUILD CARD ---
+    const card = document.createElement('div');
+    card.className = 'col-12 col-sm-6 col-lg-4 col-xl-3 fade-in-up';
+    card.innerHTML = `
+      <div class="item-card card h-100 shadow-sm border-0" data-item-name="${esc(name)}" style="cursor: pointer; transition: all 0.2s; border: 1px solid #e2e8f0;">
+        <div class="card-body p-3 d-flex flex-column">
+          
+          <!-- Header: Icon & Name -->
+          <div class="d-flex align-items-start gap-3 mb-3">
+            <div class="bg-white border rounded p-1 d-flex align-items-center justify-content-center flex-shrink-0" 
+                 style="width: 64px; height: 64px; overflow: hidden; background: #f8fafc;">
+              ${window.ToramSheets.iconHTML(imgURL, '', type, name)}
+            </div>
+            <div class="flex-grow-1 min-width-0">
+              <h6 class="fw-bold mb-1 text-truncate" style="color: var(--blue-dark); font-size: 0.9rem;" title="${esc(name)}">${esc(name)}</h6>
+              <small class="text-muted d-block text-truncate" style="font-size: 0.7rem;">[${esc(type)}]</small>
+              <div class="mt-1 d-flex flex-wrap gap-1">
+                ${eventBadge}
+                ${untradableBadge}
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats Box -->
+          ${statsHTML}
+
+          <!-- Source Info -->
+          ${sourceHTML}
+          
+          <!-- Note -->
+          ${noteHTML}
+
+          <!-- Economy Info -->
+          ${economyHTML}
+
+          <!-- Divider -->
+          <div class="border-top mt-auto pt-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <small class="text-muted">${totalStats} stats</small>
+              <small class="text-primary fw-semibold">Click for details →</small>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+    itemsGrid.appendChild(card);
+  });
+
+  // Event Delegation untuk Modal
+  itemsGrid.querySelectorAll('.item-card').forEach(cardEl => {
+    cardEl.addEventListener('click', function () {
+      const itemName = this.getAttribute('data-item-name');
+      if (itemName && window.ItemModal) window.ItemModal.open(itemName);
+    });
+    
+    // Hover effect
+    cardEl.addEventListener('mouseenter', function() { 
+      this.style.transform = 'translateY(-3px)'; 
+      this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+    });
+    cardEl.addEventListener('mouseleave', function() { 
+      this.style.transform = 'translateY(0)'; 
+      this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+    });
+  });
+}
+
+    // 3. Pagination & Filter Logic (Sama seperti sebelumnya, pastikan ID elemen sesuai)
+    function renderCurrentPage() {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = filteredData.slice(startIndex, endIndex);
+
+      const resultCount = document.getElementById('resultCount');
+      if (resultCount) resultCount.textContent = `Menampilkan ${startIndex + 1}–${Math.min(endIndex, filteredData.length)} dari ${filteredData.length} item`;
+
+      renderItems(pageData);
+      renderPaginationControls();
+    }
+
+    function renderPaginationControls() {
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      const paginationNav = document.getElementById('paginationNav');
+      const paginationControls = document.getElementById('paginationControls');
+      const pageInfo = document.getElementById('pageInfo');
+
+      if (!paginationNav || !paginationControls) return;
+      if (totalPages <= 1) { paginationNav.style.display = 'none'; return; }
+
+      paginationNav.style.display = 'block';
+      paginationControls.innerHTML = '';
+      if (pageInfo) pageInfo.textContent = `Halaman ${currentPage} dari ${totalPages}`;
+
+      function createPageButton(label, page, isActive, isDisabled) {
+        const li = document.createElement('li');
+        li.className = `page-item ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`;
+        li.innerHTML = `<a class="page-link" href="#" data-page="${page}" style="${isDisabled ? 'pointer-events: none; opacity: 0.5;' : ''}">${label}</a>`;
+        return li;
+      }
+
+      paginationControls.appendChild(createPageButton('«', 'first', false, currentPage === 1));
+      paginationControls.appendChild(createPageButton('‹', 'prev', false, currentPage === 1));
+
+      const maxVisible = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+      if (endPage - startPage + 1 < maxVisible) startPage = Math.max(1, endPage - maxVisible + 1);
+
+      if (startPage > 1) {
+        paginationControls.appendChild(createPageButton('1', 1, false, false));
+        if (startPage > 2) paginationControls.appendChild(createPageButton('…', 'none', false, true));
+      }
+      for (let i = startPage; i <= endPage; i++) paginationControls.appendChild(createPageButton(i, i, i === currentPage, false));
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) paginationControls.appendChild(createPageButton('…', 'none', false, true));
+        paginationControls.appendChild(createPageButton(totalPages, totalPages, false, false));
+      }
+
+      paginationControls.appendChild(createPageButton('›', 'next', false, currentPage === totalPages));
+      paginationControls.appendChild(createPageButton('»', 'last', false, currentPage === totalPages));
+
+      paginationControls.querySelectorAll('.page-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const action = e.target.getAttribute('data-page');
+          if (action === 'none') return;
+          if (action === 'first') currentPage = 1;
+          else if (action === 'prev') currentPage = Math.max(1, currentPage - 1);
+          else if (action === 'next') currentPage = Math.min(totalPages, currentPage + 1);
+          else if (action === 'last') currentPage = totalPages;
+          else if (!isNaN(action)) currentPage = parseInt(action);
+          renderCurrentPage();
+          itemsGrid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+    }
+
+  function applyFilters() {
+  const search = document.getElementById('searchInput')?.value.toLowerCase() || '';
+  const type = document.getElementById('filterType')?.value || 'all';
+  const rarity = document.getElementById('filterRarity')?.value || 'all';
+  const source = document.getElementById('filterSource')?.value || 'all';
+
+  filteredData = allData.filter(item => {
+    const nameMatch = (item['Name'] || '').toLowerCase().includes(search);
+    
+    // FIX: Bandingkan Type langsung (tanpa lowercase di data)
+    const itemType = (item['Type'] || '').toLowerCase();
+    let typeMatch = type === 'all';
+    
+    if (!typeMatch) {
+      // Match exact type dari dropdown
+      if (type === '1-handed sword' && itemType.includes('1-handed sword')) typeMatch = true;
+      else if (type === '2-handed sword' && itemType.includes('2-handed sword')) typeMatch = true;
+      else if (type === 'katana' && itemType === 'katana') typeMatch = true;
+      else if (type === 'bow' && itemType === 'bow') typeMatch = true;
+      else if (type === 'bowgun' && itemType === 'bowgun') typeMatch = true;
+      else if (type === 'staff' && itemType === 'staff') typeMatch = true;
+      else if (type === 'magic device' && itemType === 'magic device') typeMatch = true;
+      else if (type === 'knuckles' && itemType === 'knuckles') typeMatch = true;
+      else if (type === 'halberd' && itemType === 'halberd') typeMatch = true;
+      else if (type === 'dagger' && itemType === 'dagger') typeMatch = true;
+      else if (type === 'armor' && itemType.includes('armor')) typeMatch = true;
+      else if (type === 'shield' && itemType === 'shield') typeMatch = true;
+      else if (type === 'additional' && itemType === 'additional') typeMatch = true;
+      else if (type === 'special' && itemType === 'special') typeMatch = true;
+      else if (type === 'ring' && itemType === 'ring') typeMatch = true;
+      else if (type === 'material' && itemType === 'material') typeMatch = true;
+      else if (type === 'consumable' && itemType === 'consumable') typeMatch = true;
+    }
+    
+    const rLow = (item['Rarity'] || '').toLowerCase();
+    const rarityMatch = rarity === 'all' || (rarity === 'event' && rLow.includes('event')) || (rarity === 'non-event' && rLow.includes('non'));
+    
+    const sLow = (item['Source'] || '').toLowerCase();
+    let sourceMatch = source === 'all';
+    if (source === 'drop') sourceMatch = sLow.includes('drop') || sLow.includes('monster');
+    if (source === 'craft-npc') sourceMatch = sLow.includes('craft') || sLow.includes('npc') || sLow.includes('process');
+    if (source === 'craft-player') sourceMatch = sLow.includes('player');
+
+    return nameMatch && typeMatch && rarityMatch && sourceMatch;
+  });
+
+  console.log("✅ Hasil filter:", filteredData.length, "item ditemukan.");
+  currentPage = 1;
+  renderCurrentPage();
+}
+
+    document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+    document.getElementById('filterType')?.addEventListener('change', applyFilters);
+    document.getElementById('filterRarity')?.addEventListener('change', applyFilters);
+    document.getElementById('filterSource')?.addEventListener('change', applyFilters);
+  });
+</script>
+
 </body>
 
 </html>
