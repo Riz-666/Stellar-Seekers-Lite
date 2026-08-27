@@ -10,50 +10,167 @@ document.addEventListener('DOMContentLoaded', function () {
   const ICON_BASE = 'img/icons/';
   const DEFAULT_MONSTER_ICON = ICON_BASE + 'monsters_ico.png'; // foto default utk Mini Boss/Mob dari Coryn
 
-  // Mapping type_label item drop (dari Coryn) -> file ikon di img/icons/.
-  // Coryn belum punya dokumentasi resmi utk semua type_id, jadi ini best-effort
-  // berdasarkan kata kunci. Kalau ada type_label yang mismatch, tinggal tambah di sini.
+    // ============================================================
+  // ITEM ICON LOOKUP — biar icon drop di modal monster SAMA PERSIS
+  // dengan icon di halaman Item, termasuk material yang sekarang
+  // dikategorikan pakai field "process" dari API item (bukan tebak nama).
+  // ============================================================
+  const ITEMS_CACHE_KEY = 'coryn_all_items_v6'; // SENGAJA sama kaya di toram-api.js biar share cache
+  const ITEMS_CACHE_TIME_KEY = 'coryn_all_items_time_v6';
+  const ITEMS_CACHE_TTL = 24 * 60 * 60 * 1000;
+  const ITEMS_API_URL = 'https://coryn.club/api/v1/items.php';
+
+  const PROCESS_ID_TO_MATERIAL = { 1: 'beast', 2: 'wood', 3: 'metal', 4: 'cloth', 5: 'medicine', 6: 'mana' };
+  const MATERIAL_ICON_FILES = {
+    ore: 'ore_ico.png', metal: 'metal_ico.png', cloth: 'cloth_ico.png',
+    wood: 'wood_ico.png', beast: 'beast_ico.png', mana: 'mana_ico.png', medicine: 'medicine_ico.png'
+  };
+
+  let itemIconMap = null;          // Map<id, {type_label, process}>
+  let itemIconMapPromise = null;
+
+  // Fallback lama (dipakai kalau map belum ke-load atau item-nya gak ketemu by id)
   const DROP_ICON_KEYWORDS = [
-    ['ore', 'ore_ico.png'],
-    ['metal', 'metal_ico.png'],
-    ['cloth', 'cloth_ico.png'],
-    ['beast', 'beast_ico.png'],
-    ['wood', 'wood_ico.png'],
-    ['medicine', 'medicine_ico.png'],
-    ['mana', 'mana_ico.png'],
-    ['material', 'items_ico.png'],
-    ['bowgun', 'bwg_ico.png'],
-    ['bow', 'bow_ico.png'],
-    ['staff', 'stf_ico.png'],
-    ['magic device', 'md_ico.png'],
-    ['knuckle', 'knu_ico.png'],
-    ['katana', 'ktn_ico.png'],
-    ['dagger', 'dagger_ico.png'],
-    ['halberd', 'hb_ico.png'],
-    ['one-handed sword', '1h_ico.png'],
-    ['two-handed sword', '2h_ico.png'],
-    ['arrow', 'arrow_ico.png'],
-    ['shield', 'shield_ico.png'],
-    ['additional', 'add_ico.png'],
-    ['special', 'special_ico.png'],
-    ['armor', 'armor_ico.png'],
-    ['weapon', 'equip_ico.png'],
-    ['crystal', 'crysta_normal_base.png'],
-    ['scroll', 'scroll_ico.png'],
-    ['pet', 'pets_ico.png'],
-    ['quest', 'quest_ico.png'],
-    ['skill', 'skills_ico.png'],
-    ['map', 'maps_ico.png']
+    ['ore', 'ore_ico.png'], ['metal', 'metal_ico.png'], ['cloth', 'cloth_ico.png'],
+    ['beast', 'beast_ico.png'], ['wood', 'wood_ico.png'], ['medicine', 'medicine_ico.png'],
+    ['mana', 'mana_ico.png'], ['material', 'items_ico.png'],
+    ['bowgun', 'bwg_ico.png'], ['bow', 'bow_ico.png'], ['staff', 'stf_ico.png'],
+    ['magic device', 'md_ico.png'], ['knuckle', 'knu_ico.png'], ['katana', 'ktn_ico.png'],
+    ['dagger', 'dagger_ico.png'], ['halberd', 'hb_ico.png'],
+    ['one-handed sword', '1h_ico.png'], ['two-handed sword', '2h_ico.png'],
+    ['arrow', 'arrow_ico.png'], ['shield', 'shield_ico.png'], ['additional', 'add_ico.png'],
+    ['special', 'special_ico.png'], ['armor', 'armor_ico.png'], ['weapon', 'equip_ico.png'],
+    ['crystal', 'crysta_normal_base.png'], ['scroll', 'scroll_ico.png'],
+    ['pet', 'pets_ico.png'], ['quest', 'quest_ico.png'], ['skill', 'skills_ico.png'], ['map', 'maps_ico.png']
   ];
 
-  function getDropIcon(typeLabel) {
+  function normalizeTypeLocal(type) {
+    return (type || '').toLowerCase().replace(/[\[\]]/g, '').trim();
+  }
+
+  // Duplikat ringkas dari typeToCategory di toram-api.js — sengaja berdiri sendiri
+  // karena di halaman ini window.ToramSheets dipakai sheets.js buat load Boss dari Google Sheets.
+  function typeToCategoryLocal(type) {
+    var t = normalizeTypeLocal(type);
+    if (!t) return 'other';
+    if (/\b1[\s-]?handed\b/.test(t) || /\bone[\s-]?hand(ed)?\b/.test(t)) return '1-handed sword';
+    if (/\b2[\s-]?handed\b/.test(t) || /\btwo[\s-]?hand(ed)?\b/.test(t)) return '2-handed sword';
+    if (/\bkatana\b/.test(t)) return 'katana';
+    if (/\bbowgun\b/.test(t)) return 'bowgun';
+    if (/\bbow\b/.test(t)) return 'bow';
+    if (/\bstaff\b/.test(t)) return 'staff';
+    if (/\bmagic device\b/.test(t)) return 'magic device';
+    if (/\bknuckle/.test(t)) return 'knuckles';
+    if (/\bhalberd\b/.test(t)) return 'halberd';
+    if (/\bdagger\b/.test(t)) return 'dagger';
+    if (/\bshield\b/.test(t)) return 'shield';
+    if (/\bcrysta\b/.test(t)) return 'crysta';
+    if (/\barmor\b/.test(t)) return 'armor';
+    if (/\badditional\b/.test(t)) return 'additional';
+    if (/\bring\b/.test(t)) return 'ring';
+    if (/\bspecial\b/.test(t)) return 'special';
+    if (/\bmaterial\b/.test(t)) return 'material';
+    if (/\bconsumable\b|\bmedicine\b|\bpotion\b|\bherb\b/.test(t)) return 'consumable';
+    if (/\barrow\b/.test(t)) return 'arrow';
+    if (/\bscroll\b/.test(t)) return 'scroll';
+    return 'other';
+  }
+
+  function resolveItemIconFile(typeLabel, name, materialCategory) {
+    const cat = typeToCategoryLocal(typeLabel);
+    switch (cat) {
+      case '1-handed sword': return '1h_ico.png';
+      case '2-handed sword': return '2h_ico.png';
+      case 'katana': return 'ktn_ico.png';
+      case 'bow': return 'bow_ico.png';
+      case 'bowgun': return 'bwg_ico.png';
+      case 'staff': return 'stf_ico.png';
+      case 'magic device': return 'md_ico.png';
+      case 'knuckles': return 'knu_ico.png';
+      case 'halberd': return 'hb_ico.png';
+      case 'dagger': return 'dagger_ico.png';
+      case 'armor': return 'armor_ico.png';
+      case 'shield': return 'shield_ico.png';
+      case 'additional': return 'add_ico.png';
+      case 'special':
+      case 'ring': return 'special_ico.png';
+      case 'material':
+        return (materialCategory && MATERIAL_ICON_FILES[materialCategory]) || 'items_ico.png';
+      case 'consumable': return 'medicine_ico.png';
+      case 'arrow': return 'arrow_ico.png';
+      case 'scroll': return 'scroll_ico.png';
+      case 'crysta': return 'crysta_normal_base.png';
+      default: return 'items_ico.png';
+    }
+  }
+
+  // Fetch (atau pakai cache) daftar SEMUA item dari API, buat lookup icon drop by ID.
+  // Cache-nya SAMA dengan yang dipakai tools-items.html, jadi kalau udah pernah dibuka
+  // duluan, di sini instan gak perlu download ulang ~8400 item.
+  function loadItemIconMap() {
+    if (itemIconMapPromise) return itemIconMapPromise;
+
+    itemIconMapPromise = (async function () {
+      let rawItems = null;
+      try {
+        const cached = localStorage.getItem(ITEMS_CACHE_KEY);
+        const ts = parseInt(localStorage.getItem(ITEMS_CACHE_TIME_KEY) || '0', 10);
+        if (cached && (Date.now() - ts) < ITEMS_CACHE_TTL) {
+          rawItems = JSON.parse(cached);
+        }
+      } catch (e) { /* ignore */ }
+
+      if (!rawItems) {
+        rawItems = [];
+        let offset = 0;
+        const limit = 100;
+        let total = 0;
+        let isFirst = true;
+        while (true) {
+          try {
+            const res = await fetch(`${ITEMS_API_URL}?limit=${limit}&offset=${offset}`);
+            if (!res.ok) break;
+            const json = await res.json();
+            if (!json.success || !json.data) break;
+            if (isFirst) { total = json.meta.total; isFirst = false; }
+            rawItems = rawItems.concat(json.data);
+            offset += limit;
+            if (rawItems.length >= total) break;
+            await new Promise(r => setTimeout(r, 30));
+          } catch (e) { break; }
+        }
+        try {
+          localStorage.setItem(ITEMS_CACHE_KEY, JSON.stringify(rawItems));
+          localStorage.setItem(ITEMS_CACHE_TIME_KEY, Date.now().toString());
+        } catch (e) { /* ignore */ }
+      }
+
+      const map = new Map();
+      rawItems.forEach(function (it) {
+        map.set(it.id, { type_label: it.type_label, process: it.process });
+      });
+      itemIconMap = map;
+      return map;
+    })();
+
+    return itemIconMapPromise;
+  }
+
+  function getDropIcon(drop) {
+    const typeLabel = drop && drop.type_label;
+
+    if (drop && drop.id && itemIconMap && itemIconMap.has(drop.id)) {
+      const info = itemIconMap.get(drop.id);
+      const matCat = PROCESS_ID_TO_MATERIAL[info.process] || null;
+      return ICON_BASE + resolveItemIconFile(info.type_label || typeLabel, drop.name, matCat);
+    }
+
+    // Fallback: map belum ke-load / item gak ketemu by id -> tebak dari type_label
     const t = (typeLabel || '').toLowerCase().replace(/[\[\]]/g, '').trim();
     for (let i = 0; i < DROP_ICON_KEYWORDS.length; i++) {
-      if (t.indexOf(DROP_ICON_KEYWORDS[i][0]) !== -1) {
-        return ICON_BASE + DROP_ICON_KEYWORDS[i][1];
-      }
+      if (t.indexOf(DROP_ICON_KEYWORDS[i][0]) !== -1) return ICON_BASE + DROP_ICON_KEYWORDS[i][1];
     }
-    return ICON_BASE + 'items_ico.png'; // fallback generik
+    return ICON_BASE + 'items_ico.png';
   }
 
   // List/bulk endpoint Coryn (limit+offset) ternyata tidak menyertakan detail lengkap
@@ -98,6 +215,18 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   console.log("🔍 [MONSTERS.JS] Script loaded, waiting for sheetsdataready...");
+
+    // Mulai load daftar item di background (paralel sama load monster), buat lookup icon drop
+  loadItemIconMap().then(function () {
+    console.log("✅ Item icon map siap:", itemIconMap.size, "item");
+    // Kalau modal monster udah kebuka duluan sebelum ini kelar, refresh biar icon-nya ke-update
+    const openName = document.getElementById('modalMonsterName') && document.getElementById('modalMonsterName').textContent;
+    if (openName && groupedMonsters[openName]) {
+      renderModalContent(groupedMonsters[openName]);
+    }
+  }).catch(function (err) {
+    console.error("Gagal load item icon map:", err);
+  });
 
   // 1. Ambil data Boss dari Google Sheets
   document.addEventListener('sheetsdataready', function (e) {
@@ -454,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function () {
       } else if (Array.isArray(m['DropsDetail']) && m['DropsDetail'].length > 0) {
         // Data dari Coryn: tiap drop punya type_label -> tampilkan dengan ikon sesuai
         dropsHtml = m['DropsDetail'].map(function (d) {
-          const icon = getDropIcon(d.type_label);
+          const icon = getDropIcon(d);
           return `<span class="badge bg-light text-dark border me-1 mb-1 p-2 d-inline-flex align-items-center gap-1">
                     <img src="${icon}" alt="${d.type_label || ''}" style="width:16px;height:16px;object-fit:contain;" onerror="this.style.display='none';">
                     ${d.name}
