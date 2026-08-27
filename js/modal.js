@@ -199,6 +199,14 @@ window.ItemModal = (function () {
         else if (t === 'shield') fallbackIcon = 'img/icons/shield_ico.png';
         else if (t === 'additional') fallbackIcon = 'img/icons/add_ico.png';
         else if (t === 'special' || t === 'ring') fallbackIcon = 'img/icons/special_ico.png';
+        else if (t.indexOf('crysta') !== -1) {
+          var crystaCat1 = 'normal';
+          if (t.indexOf('weapon crysta') !== -1) crystaCat1 = 'weapon';
+          else if (t.indexOf('armor crysta') !== -1) crystaCat1 = 'armor';
+          else if (t.indexOf('special crysta') !== -1) crystaCat1 = 'special';
+          else if (t.indexOf('additional crysta') !== -1 || t.indexOf('add crysta') !== -1) crystaCat1 = 'add';
+          fallbackIcon = 'img/icons/crysta_' + crystaCat1 + '_base.png';
+        }
         
         // Buat img element dengan onerror handler
         imageEl.innerHTML = '<img src="' + esc(img) + '" alt="' + esc(name) + '" onerror="this.onerror=null;this.src=\'' + fallbackIcon + '\';this.style.opacity=\'1\';" style="max-width:100%;max-height:200px;object-fit:contain">';
@@ -223,6 +231,14 @@ window.ItemModal = (function () {
         else if (t === 'shield') directIcon = 'img/icons/shield_ico.png';
         else if (t === 'additional') directIcon = 'img/icons/add_ico.png';
         else if (t === 'special' || t === 'ring') directIcon = 'img/icons/special_ico.png';
+        else if (t.indexOf('crysta') !== -1) {
+          var crystaCat2 = 'normal';
+          if (t.indexOf('weapon crysta') !== -1) crystaCat2 = 'weapon';
+          else if (t.indexOf('armor crysta') !== -1) crystaCat2 = 'armor';
+          else if (t.indexOf('special crysta') !== -1) crystaCat2 = 'special';
+          else if (t.indexOf('additional crysta') !== -1 || t.indexOf('add crysta') !== -1) crystaCat2 = 'add';
+          directIcon = 'img/icons/crysta_' + crystaCat2 + '_base.png';
+        }
         
         imageEl.innerHTML = '<img src="' + directIcon + '" alt="' + esc(name) + '" style="max-width:100%;max-height:200px;object-fit:contain">';
       }

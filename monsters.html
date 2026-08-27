@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,11 +18,13 @@
       overflow: hidden;
       height: 100%;
     }
+
     .monster-card:hover {
       transform: translateY(-4px);
       box-shadow: var(--shadow-md);
       border-color: var(--blue-light);
     }
+
     .monster-img-wrapper {
       height: 140px;
       background: var(--gray-50);
@@ -30,20 +33,50 @@
       justify-content: center;
       overflow: hidden;
     }
+
     .monster-img-wrapper img {
       max-height: 100%;
       width: auto;
       object-fit: contain;
     }
-    .elem-Fire { background-color: #fee2e2 !important; color: #991b1b !important; }
-    .elem-Water { background-color: #dbeafe !important; color: #1e40af !important; }
-    .elem-Wind { background-color: #dcfce7 !important; color: #166534 !important; }
-    .elem-Earth { background-color: #fef3c7 !important; color: #92400e !important; }
-    .elem-Light { background-color: #fef9c3 !important; color: #854d0e !important; }
-    .elem-Dark { background-color: #f3e8ff !important; color: #6b21a8 !important; }
-    .elem-Neutral { background-color: #f1f5f9 !important; color: #475569 !important; }
+
+    .elem-Fire {
+      background-color: #fee2e2 !important;
+      color: #991b1b !important;
+    }
+
+    .elem-Water {
+      background-color: #dbeafe !important;
+      color: #1e40af !important;
+    }
+
+    .elem-Wind {
+      background-color: #dcfce7 !important;
+      color: #166534 !important;
+    }
+
+    .elem-Earth {
+      background-color: #fef3c7 !important;
+      color: #92400e !important;
+    }
+
+    .elem-Light {
+      background-color: #fef9c3 !important;
+      color: #854d0e !important;
+    }
+
+    .elem-Dark {
+      background-color: #f3e8ff !important;
+      color: #6b21a8 !important;
+    }
+
+    .elem-Neutral {
+      background-color: #f1f5f9 !important;
+      color: #475569 !important;
+    }
   </style>
 </head>
+
 <body style="scroll-behavior: smooth;">
 
   <!-- PAGE LOADER -->
@@ -83,7 +116,8 @@
     <div class="container">
       <div class="text-center mb-5">
         <h2 class="fw-bold display-5" style="color: var(--blue-dark);">Database Monster</h2>
-        <p class="text-muted fs-5">Cari informasi monster, lokasi, elemen, dan daftar drop item. Klik monster untuk melihat detail per difficulty.</p>
+        <p class="text-muted fs-5">Cari informasi monster, lokasi, elemen, dan daftar drop item. Klik monster untuk
+          melihat detail per difficulty.</p>
       </div>
 
       <!-- SEARCH & FILTER -->
@@ -92,7 +126,8 @@
           <div class="col-md-8">
             <div class="input-group">
               <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-              <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Cari nama monster atau lokasi...">
+              <input type="text" id="searchInput" class="form-control border-start-0"
+                placeholder="Cari nama monster atau lokasi...">
             </div>
           </div>
           <div class="col-md-4">
@@ -133,7 +168,8 @@
 
   <!-- FOOTER -->
   <footer class="footer">
-    <div class="container text-center pt-4 border-top" style="border-color: rgba(255,255,255,0.1) !important; color: rgba(255,255,255,0.5);">
+    <div class="container text-center pt-4 border-top"
+      style="border-color: rgba(255,255,255,0.1) !important; color: rgba(255,255,255,0.5);">
       © 2026 Stellar Seekers. Made By Naraya◦.
     </div>
   </footer>
@@ -151,7 +187,7 @@
           <ul class="nav nav-pills mb-3 justify-content-center" id="modalTabs" role="tablist">
             <!-- Tabs will be injected here by JS -->
           </ul>
-          
+
           <!-- Tab Content -->
           <div class="tab-content" id="modalTabContent">
             <!-- Content will be injected here by JS -->
@@ -166,8 +202,9 @@
   <script src="js/config.js"></script>
   <script src="js/transition.js"></script>
   <script src="js/sheets.js"></script>
-  
-  <script>
+  <script src="js/monsters.js"></script>
+
+  <script type="text/x-removed-duplicate-do-not-run">
         let allMonsters = [];
     let groupedMonsters = {};
     let monsterModalInstance = null;
@@ -445,4 +482,5 @@
     });
   </script>
 </body>
+
 </html>

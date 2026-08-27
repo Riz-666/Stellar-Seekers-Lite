@@ -254,10 +254,20 @@ window.ToramSheets = (function () {
   else if (t === 'special' || t === 'ring') fallbackImg = 'img/icons/special_ico.png';
   else if (t.includes('material') || t.includes('ore')) fallbackImg = 'img/icons/items_ico.png';
   
+  // Crysta detection (Enhancer/Weapon/Armor/Additional/Special Crysta)
+  if (t.indexOf('crysta') !== -1) {
+    var crystaCat = 'normal';
+    if (t.indexOf('weapon crysta') !== -1) crystaCat = 'weapon';
+    else if (t.indexOf('armor crysta') !== -1) crystaCat = 'armor';
+    else if (t.indexOf('special crysta') !== -1) crystaCat = 'special';
+    else if (t.indexOf('additional crysta') !== -1 || t.indexOf('add crysta') !== -1) crystaCat = 'add';
+    fallbackImg = 'img/icons/crysta_' + crystaCat + '_base.png';
+  }
+
   var objectFit = fit || 'contain';
   
   // Jangan coba load dari Coryn, langsung pakai icon lokal
-  return '<img src="' + fallbackImg + '" alt="' + esc(altText) + '" style="width:100%;height:100%;object-fit:' + objectFit + ';border-radius:inherit" />';
+  return '<img src="' + fallbackImg + '" alt="' + esc(altText) + '" style="width:100%;height:100%;object-fit:' + objectFit + ';border-radius:inherit" onerror="this.onerror=null;this.src=\'img/icons/items_ico.png\';" />';
 }
 
   function typeToCategory(type) {
@@ -280,6 +290,11 @@ window.ToramSheets = (function () {
   if (t === 'ring') return 'ring';
   if (t === 'material') return 'material';
   if (t === 'consumable') return 'consumable';
+  if (t.indexOf('weapon crysta') !== -1) return 'weapon crysta';
+  if (t.indexOf('armor crysta') !== -1) return 'armor crysta';
+  if (t.indexOf('special crysta') !== -1) return 'special crysta';
+  if (t.indexOf('additional crysta') !== -1) return 'additional crysta';
+  if (t.indexOf('crysta') !== -1) return 'enhancer crysta';
   return 'other';
 }
 

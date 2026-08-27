@@ -131,6 +131,11 @@
   <option value="ring">Ring</option>
   <option value="material">Material</option>
   <option value="consumable">Consumable</option>
+  <option value="enhancer crysta">Enhancer Crysta</option>
+  <option value="weapon crysta">Weapon Crysta</option>
+  <option value="armor crysta">Armor Crysta</option>
+  <option value="additional crysta">Additional Crysta</option>
+  <option value="special crysta">Special Crysta</option>
 </select>
           </div>
           <div class="col-md-2">
@@ -579,8 +584,8 @@
     
     if (!typeMatch) {
       // Match exact type dari dropdown
-      if (type === '1-handed sword' && itemType.includes('1-handed sword')) typeMatch = true;
-      else if (type === '2-handed sword' && itemType.includes('2-handed sword')) typeMatch = true;
+      if (type === '1-handed sword' && (itemType.includes('1-handed sword') || itemType.includes('one-hand sword') || itemType.includes('one-handed sword'))) typeMatch = true;
+      else if (type === '2-handed sword' && (itemType.includes('2-handed sword') || itemType.includes('two-hand sword') || itemType.includes('two-handed sword'))) typeMatch = true;
       else if (type === 'katana' && itemType === 'katana') typeMatch = true;
       else if (type === 'bow' && itemType === 'bow') typeMatch = true;
       else if (type === 'bowgun' && itemType === 'bowgun') typeMatch = true;
@@ -596,6 +601,11 @@
       else if (type === 'ring' && itemType === 'ring') typeMatch = true;
       else if (type === 'material' && itemType === 'material') typeMatch = true;
       else if (type === 'consumable' && itemType === 'consumable') typeMatch = true;
+      else if (type === 'weapon crysta' && itemType.includes('weapon crysta')) typeMatch = true;
+      else if (type === 'armor crysta' && itemType.includes('armor crysta')) typeMatch = true;
+      else if (type === 'additional crysta' && itemType.includes('additional crysta')) typeMatch = true;
+      else if (type === 'special crysta' && itemType.includes('special crysta')) typeMatch = true;
+      else if (type === 'enhancer crysta' && itemType.includes('crysta') && !itemType.includes('weapon crysta') && !itemType.includes('armor crysta') && !itemType.includes('additional crysta') && !itemType.includes('special crysta')) typeMatch = true;
     }
     
     const rLow = (item['Rarity'] || '').toLowerCase();
