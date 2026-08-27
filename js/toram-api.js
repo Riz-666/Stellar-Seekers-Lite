@@ -14,6 +14,47 @@ window.ToramSheets = (function () {
   }());
 
   // ============================================================
+// Mapping ID kategori proses (field "process" dari API) -> kategori material.
+// INI DATA PASTI dari coryn.club, diverifikasi langsung dari halaman resminya:
+// coryn.club/material.php?proc=1..6
+// ============================================================
+var PROCESS_ID_TO_MATERIAL = {
+  1: 'beast',
+  2: 'wood',
+  3: 'metal',
+  4: 'cloth',
+  5: 'medicine',
+  6: 'mana'
+};
+
+var MATERIAL_ICON_FILES = {
+  ore: 'ore_ico.png',
+  metal: 'metal_ico.png',
+  cloth: 'cloth_ico.png',
+  wood: 'wood_ico.png',
+  beast: 'beast_ico.png',
+  mana: 'mana_ico.png',
+  medicine: 'medicine_ico.png'
+};
+
+// materialCategory idealnya datang dari field "process" API (via PROCESS_ID_TO_MATERIAL) —
+// itu data PASTI dari game. Fallback ke tebak nama cuma dipakai kalau data process kosong/gak dikenal.
+function resolveMaterialIcon(type, name, materialCategory) {
+  if (materialCategory && MATERIAL_ICON_FILES[materialCategory]) {
+    return MATERIAL_ICON_FILES[materialCategory];
+  }
+  var haystack = ((type || '') + ' ' + (name || '')).toLowerCase();
+  if (/\bore\b/.test(haystack)) return MATERIAL_ICON_FILES.ore;
+  if (/\bmetal\b|\bingot\b/.test(haystack)) return MATERIAL_ICON_FILES.metal;
+  if (/\bcloth\b|\bfabric\b|\bthread\b|\byarn\b/.test(haystack)) return MATERIAL_ICON_FILES.cloth;
+  if (/\bwood\b|\blumber\b|\blog\b/.test(haystack)) return MATERIAL_ICON_FILES.wood;
+  if (/\bbeast\b|\bhide\b|\bfur\b|\bleather\b|\bbone\b|\bhorn\b|\bfang\b|\bclaw\b/.test(haystack)) return MATERIAL_ICON_FILES.beast;
+  if (/\bmana\b/.test(haystack)) return MATERIAL_ICON_FILES.mana;
+  if (/\bmedicine\b|\bpotion\b|\bherb\b/.test(haystack)) return MATERIAL_ICON_FILES.medicine;
+  return null;
+}
+
+  // ============================================================
   // SINGLE SOURCE OF TRUTH: type_label -> kategori
   // Regex dibuat fleksibel: nerima spasi ATAU strip ("2 Handed Sword",
   // "2-Handed Sword", "two-handed sword", dst semua ke-cover).
@@ -76,52 +117,40 @@ window.ToramSheets = (function () {
     return null; // bukan crysta
   }
 
-  // Deteksi sub-tipe material dari gabungan type + name (whole-word, case-insensitive)
-  function resolveMaterialIcon(type, name) {
-    var haystack = ((type || '') + ' ' + (name || '')).toLowerCase();
-    if (/\bore\b/.test(haystack)) return 'ore_ico.png';
-    if (/\bmetal\b|\bingot\b/.test(haystack)) return 'metal_ico.png';
-    if (/\bcloth\b|\bfabric\b|\bthread\b|\byarn\b/.test(haystack)) return 'cloth_ico.png';
-    if (/\bwood\b|\blumber\b|\blog\b/.test(haystack)) return 'wood_ico.png';
-    if (/\bbeast\b|\bhide\b|\bfur\b|\bleather\b|\bbone\b|\bhorn\b|\bfang\b|\bclaw\b/.test(haystack)) return 'beast_ico.png';
-    if (/\bmana\b/.test(haystack)) return 'mana_ico.png';
-    if (/\bmedicine\b|\bpotion\b|\bherb\b/.test(haystack)) return 'medicine_ico.png';
-    return null;
-  }
 
   // Nama file icon (tanpa path) untuk kategori manapun. Dipakai grid & modal,
   // jadi hasilnya SELALU konsisten di semua tempat.
-  function getItemIconFile(type, name, tier) {
-    var cat = typeToCategory(type);
-    switch (cat) {
-      case '1-handed sword': return '1h_ico.png';
-      case '2-handed sword': return '2h_ico.png';
-      case 'katana': return 'ktn_ico.png';
-      case 'bow': return 'bow_ico.png';
-      case 'bowgun': return 'bwg_ico.png';
-      case 'staff': return 'stf_ico.png';
-      case 'magic device': return 'md_ico.png';
-      case 'knuckles': return 'knu_ico.png';
-      case 'halberd': return 'hb_ico.png';
-      case 'dagger': return 'dagger_ico.png';
-      case 'armor': return 'armor_ico.png';
-      case 'shield': return 'shield_ico.png';
-      case 'additional': return 'add_ico.png';
-      case 'special':
-      case 'ring': return 'special_ico.png';
-      case 'material': return resolveMaterialIcon(type, name) || 'items_ico.png';
-      case 'consumable': return 'medicine_ico.png';
-      case 'weapon crysta':
-      case 'armor crysta':
-      case 'special crysta':
-      case 'additional crysta':
-      case 'enhancer crysta': {
-        var c = getCrystaCategory(type) || 'normal';
-        return 'crysta_' + c + '_' + (tier || 'base') + '.png';
-      }
-      default: return 'items_ico.png';
+  function getItemIconFile(type, name, tier, materialCategory) {
+  var cat = typeToCategory(type);
+  switch (cat) {
+    case '1-handed sword': return '1h_ico.png';
+    case '2-handed sword': return '2h_ico.png';
+    case 'katana': return 'ktn_ico.png';
+    case 'bow': return 'bow_ico.png';
+    case 'bowgun': return 'bwg_ico.png';
+    case 'staff': return 'stf_ico.png';
+    case 'magic device': return 'md_ico.png';
+    case 'knuckles': return 'knu_ico.png';
+    case 'halberd': return 'hb_ico.png';
+    case 'dagger': return 'dagger_ico.png';
+    case 'armor': return 'armor_ico.png';
+    case 'shield': return 'shield_ico.png';
+    case 'additional': return 'add_ico.png';
+    case 'special':
+    case 'ring': return 'special_ico.png';
+    case 'material': return resolveMaterialIcon(type, name, materialCategory) || 'items_ico.png';
+    case 'consumable': return 'medicine_ico.png';
+    case 'weapon crysta':
+    case 'armor crysta':
+    case 'special crysta':
+    case 'additional crysta':
+    case 'enhancer crysta': {
+      var c = getCrystaCategory(type) || 'normal';
+      return 'crysta_' + c + '_' + (tier || 'base') + '.png';
     }
+    default: return 'items_ico.png';
   }
+}
 
   // ============================================================
   // CORE API FUNCTIONS
@@ -260,6 +289,7 @@ window.ToramSheets = (function () {
         ID: item.id,
         Name: item.name || 'Unknown',
         Type: item.type_label ? item.type_label.replace(/[\[\]]/g, '') : 'Unknown',
+        MaterialCategory: PROCESS_ID_TO_MATERIAL[item.process] || null,
         StatsList: [],
         StatsString: '',
         TotalStats: 0,
@@ -303,11 +333,11 @@ window.ToramSheets = (function () {
   }
 
   // FUNGSI ICON HTML — sekarang tinggal manggil getItemIconFile, gak ada logic duplikat lagi
-  function iconHTML(imageURL, icon, type, altText, source, fit) {
-    var fallbackImg = ICON_BASE + getItemIconFile(type, altText);
-    var objectFit = fit || 'contain';
-    return '<img src="' + fallbackImg + '" alt="' + esc(altText) + '" style="width:100%;height:100%;object-fit:' + objectFit + ';border-radius:inherit" onerror="this.onerror=null;this.src=\'' + ICON_BASE + 'items_ico.png\';" />';
-  }
+function iconHTML(imageURL, icon, type, altText, materialCategory, fit) {
+  var fallbackImg = ICON_BASE + getItemIconFile(type, altText, null, materialCategory);
+  var objectFit = fit || 'contain';
+  return '<img src="' + fallbackImg + '" alt="' + esc(altText) + '" style="width:100%;height:100%;object-fit:' + objectFit + ';border-radius:inherit" onerror="this.onerror=null;this.src=\'' + ICON_BASE + 'items_ico.png\';" />';
+}
 
   return {
     CONFIG: CONFIG,

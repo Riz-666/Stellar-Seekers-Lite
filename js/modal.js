@@ -21,12 +21,12 @@ window.ItemModal = (function () {
   }
 
   // Wrapper tipis ke fungsi terpusat di toram-api.js, biar gak ada logic duplikat.
-  function resolveIconFile(type, name, tier) {
-    if (window.ToramSheets && window.ToramSheets.getItemIconFile) {
-      return window.ToramSheets.getItemIconFile(type, name, tier);
-    }
-    return 'items_ico.png';
+  function resolveIconFile(type, name, tier, materialCategory) {
+  if (window.ToramSheets && window.ToramSheets.getItemIconFile) {
+    return window.ToramSheets.getItemIconFile(type, name, tier, materialCategory);
   }
+  return 'items_ico.png';
+}
 
   function getCrystaCategory(type) {
     if (window.ToramSheets && window.ToramSheets.getCrystaCategory) {
@@ -251,7 +251,7 @@ window.ItemModal = (function () {
     // ==========================================
     var imageEl = document.getElementById('modalImage');
     if (imageEl) {
-      var localIcon = 'img/icons/' + resolveIconFile(type, name);
+      var localIcon = 'img/icons/' + resolveIconFile(type, name, null, item.MaterialCategory);
       if (img) {
         // Coba pakai gambar asli dulu, kalau gagal load baru fallback ke icon lokal berdasarkan tipe
         imageEl.innerHTML = '<img src="' + esc(img) + '" alt="' + esc(name) + '" onerror="this.onerror=null;this.src=\'' + localIcon + '\';this.style.opacity=\'1\';" style="max-width:100%;max-height:200px;object-fit:contain">';
