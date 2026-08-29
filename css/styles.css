@@ -179,70 +179,27 @@ body.page-leaving>*:not(#page-loader) {
   box-shadow: var(--shadow-md);
   border-bottom-color: rgba(30, 58, 138, 0.08);
 }
-/* ===== NAVBAR BRAND ===== */
+
 .navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   font-weight: 800;
   font-size: 1.4rem;
   color: var(--blue-dark) !important;
   letter-spacing: -0.5px;
 }
 
-/* Sembunyikan teks "Stellar Seekers" karena logo sudah ada teksnya */
-.navbar-brand .brand-text {
-  display: none;
-}
-
-/* ===== LOGO PLACEHOLDER (Updated untuk logo memanjang) ===== */
 .logo-placeholder {
-  width: auto;
-  max-width: 220px;
-  height: 52px;
-  border-radius: 8px;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  background: transparent;
-  padding: 4px 8px;
-  flex-shrink: 0;
-}
-
-.logo-placeholder:hover {
-  transform: scale(1.03);
-  transition: transform 0.2s ease;
-}
-
-.logo-placeholder img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 992px) {
-  .logo-placeholder {
-    max-width: 180px;
-    height: 46px;
-  }
-}
-
-@media (max-width: 768px) {
-  .logo-placeholder {
-    max-width: 160px;
-    height: 42px;
-  }
-}
-
-@media (max-width: 576px) {
-  .logo-placeholder {
-    max-width: 130px;
-    height: 36px;
-  }
+  box-shadow: var(--shadow-md);
+  /* outline: 2px dashed rgba(30, 58, 138, 0.35);
+  outline-offset: 2px; */
+  /* transition: outline-color 0.3s ease; */
 }
 
 .logo-placeholder:hover {
