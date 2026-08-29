@@ -358,7 +358,7 @@ window.selectHokianAspect = function(value, element) {
     { id: 4, chapter: 'Chapter 1.8', quest_name: 'Purification Incense', name_en: 'Fairy Feather', name_id: 'Sayap Peri', jumlah: 'x3', source: 'Roar — Ruined temple area 2/3' },
     { id: 5, chapter: 'Chapter 1.8', quest_name: 'Purification Incense', name_en: 'Thick Beak', name_id: 'Paruh Tebal', jumlah: 'x3', source: 'Beak — Ruined temple area 1' },
     { id: 6, chapter: 'Chapter 1.8', quest_name: 'Purification Incense', name_en: 'Vine', name_id: 'Sulur', jumlah: 'x3', source: 'Pain Leaf — Isthmus Of Kaus' },
-    { id: 7, chapter: 'Chapter 2.13', quest_name: 'Trials in the Palace', name_en: 'Swordsman Stone Coin', name_id: 'Koin Batu Ksatria', jumlah: 'x20', source: 'Sword marionette - New moon place' },
+    { id: 7, chapter: 'Chapter 2.13', quest_name: 'Trials in the Palace', name_en: 'Swordsman Stone Coin', name_id: 'Koin Ksatria', jumlah: 'x20', source: 'Sword marionette - New moon place' },
     { id: 8, chapter: 'Chapter 3.18', quest_name: 'The Invincible... Enemy??', name_en: 'Sand Mole Meat', name_id: 'Daging Tikus Pasir', jumlah: 'x1', source: 'Sand mole - Centerio highlands' },
     { id: 9, chapter: 'Chapter 3.18', quest_name: 'The Invincible... Enemy??', name_en: 'Beast Claw', name_id: 'Cakar Binatang Buas', jumlah: 'x5', source: 'Foxiger - Centerio highlands' },
     { id: 10, chapter: 'Chapter 3.18', quest_name: 'The Invincible... Enemy??', name_en: 'Sand Frog Skin', name_id: 'Kulit Kodok Pasir', jumlah: 'x5', source: 'Sand frosch - Centerio highlands' },
