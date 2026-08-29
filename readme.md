@@ -1,50 +1,226 @@
-# Community Hub — Setup Guide
+# Community Hub
 
-## 🚀 Cara Deploy
+Community Hub adalah sebuah web-based platform yang dibuat untuk membantu pengelolaan komunitas, khususnya komunitas **Toram Online**.
 
-### 1. Setup Google Sheets (Backend)
-1. Buka Google Sheets → buat spreadsheet baru
-2. Rename sheet pertama jadi `Members`
-3. Isi baris 1 (header) persis seperti ini:
-ID | Nickname | MainJob | BuffLand | KodeLand | WhatsApp | Status | AlasanNonaktif | Tanggal
+Website ini menggabungkan beberapa fitur komunitas dalam satu tempat, mulai dari **Toram Tools**, pengelolaan data member, hingga sistem informasi komunitas. Project ini dirancang sebagai sebuah hub yang memudahkan anggota komunitas dalam mengakses tools sekaligus membantu admin dalam mengelola data member.
 
-4. Klik **Extensions → Apps Script**
-5. Hapus semua kode, paste isi `code.gs`
-6. **GANTI** `ADMIN_PASSWORD` di baris atas dengan password lo
-7. Klik **Deploy → New deployment**
-   - Pilih type: **Web app**
-   - Execute as: **Me**
-   - Who has access: **Anyone**
-8. Klik **Deploy**, authorize kalau diminta
-9. **Copy URL** yang muncul (format: `https://script.google.com/macros/s/XXXXX/exec`)
+---
 
-### 2. Setup Frontend
-1. Buka file `js/config.js`
-2. Paste URL Apps Script tadi ke `API_URL`
-3. Ganti `ADMIN_PASSWORD` di config.js sama dengan di Apps Script
+## Features
 
-### 3. Deploy ke Netlify
-1. Login ke netlify.com
-2. Drag & drop folder project ke Netlify dashboard
-3. Selesai! Website lo live
+### Toram Tools
 
-## 🔐 Link-link Penting
+Community Hub menyediakan berbagai tools yang dapat digunakan oleh pemain untuk membantu aktivitas dan kebutuhan dalam game Toram Online.
 
-- **Homepage**: `https://domainlo.netlify.app/`
-- **Form Daftar** (hidden): `https://domainlo.netlify.app/daftar.html`
-- **Edit Data** (link pribadi): `https://domainlo.netlify.app/edit.html?id=UUID_MEMBER`
-- **Admin Panel**: `https://domainlo.netlify.app/admin.html`
+Tools dapat terus dikembangkan dan ditambahkan sesuai dengan kebutuhan komunitas.
 
-## 🛡️ Keamanan
+### Member Management
 
-- WhatsApp **tidak** tampil di list publik
-- Link edit per-member pakai UUID (sulit ditebak)
-- Export data butuh password admin
-- Input disanitasi untuk mencegah XSS
-- Password admin disimpan di server (Apps Script), tidak di-expose ke client
+Sistem pengelolaan member memungkinkan komunitas untuk menyimpan dan mengelola informasi anggota secara terpusat.
 
-## 💡 Tips
+Data yang dapat dikelola meliputi:
 
-- Kalau mau ganti password, ubah di 2 tempat: `code.gs` dan `js/config.js`
-- Data bisa dilihat & diedit manual langsung di Google Sheets
-- Backup otomatis karena data ada di Google Drive lo
+* ID Member
+* Nickname
+* Main Job
+* Buff Land
+* Kode Land
+* WhatsApp
+* Status Member
+* Alasan Nonaktif
+* Tanggal Pendaftaran atau Pembaruan Data
+
+Informasi kontak seperti WhatsApp tidak ditampilkan pada halaman publik.
+
+### Member Status
+
+Member dapat memiliki status aktif maupun nonaktif.
+
+Untuk member yang tidak lagi aktif, alasan status nonaktif dapat dicatat sebagai bagian dari data komunitas.
+
+### Member Data
+
+Data member disimpan menggunakan Google Sheets sebagai database backend.
+
+Pendekatan ini memungkinkan data tetap mudah diakses dan dikelola oleh administrator tanpa memerlukan database server khusus.
+
+---
+
+## Technology
+
+Project ini menggunakan beberapa layanan dan teknologi berikut:
+
+* HTML
+* CSS
+* JavaScript
+* Google Sheets
+* Google Apps Script
+
+Google Sheets digunakan sebagai penyimpanan data, sedangkan Google Apps Script digunakan sebagai API backend yang menghubungkan website dengan data member.
+
+Frontend dapat dijalankan sebagai static website dan di-deploy menggunakan layanan seperti Netlify atau GitHub Pages.
+
+---
+
+## Project Structure
+
+```text
+community-hub/
+│
+├── index.html
+├── members.html
+├── tools/
+│
+├── css/
+│
+├── js/
+│   └── config.js
+│
+├── assets/
+│
+├── code.gs
+│
+└── README.md
+```
+
+Struktur folder dapat berubah seiring dengan penambahan fitur dan tools baru.
+
+---
+
+## Backend
+
+Backend menggunakan Google Apps Script yang terhubung langsung dengan Google Sheets.
+
+Spreadsheet digunakan sebagai penyimpanan utama data member dengan sheet:
+
+```text
+Members
+```
+
+Struktur data member:
+
+| Field          | Description                           |
+| -------------- | ------------------------------------- |
+| ID             | Identitas member                      |
+| Nickname       | Nama karakter atau nickname member    |
+| MainJob        | Job utama yang digunakan              |
+| BuffLand       | Informasi Buff Land                   |
+| KodeLand       | Kode atau akses Land                  |
+| WhatsApp       | Nomor kontak member                   |
+| Status         | Status keanggotaan                    |
+| AlasanNonaktif | Keterangan apabila member tidak aktif |
+| Tanggal        | Tanggal data dibuat atau diperbarui   |
+
+Google Apps Script berfungsi sebagai API untuk menerima, membaca, memperbarui, dan mengelola data dari frontend.
+
+---
+
+## Configuration
+
+Konfigurasi frontend berada pada:
+
+```text
+js/config.js
+```
+
+Konfigurasi utama yang digunakan:
+
+```javascript
+API_URL
+ADMIN_PASSWORD
+```
+
+`API_URL` digunakan untuk menghubungkan website dengan Google Apps Script API.
+
+Password administrator digunakan untuk fitur yang membutuhkan akses khusus, seperti pengelolaan atau export data.
+
+---
+
+## Security
+
+Beberapa mekanisme keamanan diterapkan untuk melindungi data member dan fitur administrator.
+
+* Nomor WhatsApp tidak ditampilkan pada daftar publik.
+* Data member menggunakan identitas unik.
+* Link atau akses edit member menggunakan UUID.
+* Input pengguna disanitasi untuk mengurangi risiko XSS.
+* Fitur tertentu memerlukan autentikasi administrator.
+* Password utama backend disimpan dan divalidasi melalui Google Apps Script.
+
+> Pastikan repository tidak menyimpan credential atau informasi sensitif apabila project dikembangkan menjadi public repository.
+
+---
+
+## Data Management
+
+Karena data disimpan di Google Sheets, administrator tetap dapat melakukan beberapa pengelolaan secara langsung melalui spreadsheet.
+
+Keuntungan pendekatan ini:
+
+* Tidak memerlukan database server terpisah.
+* Data mudah dilihat dan dikelola.
+* Memanfaatkan penyimpanan Google Drive.
+* Mudah digunakan untuk komunitas kecil hingga menengah.
+* Data dapat diekspor atau dibackup sesuai kebutuhan.
+
+---
+
+## Deployment
+
+Frontend dapat di-deploy sebagai static website menggunakan platform seperti:
+
+* Netlify
+* GitHub Pages
+* Cloudflare Pages
+
+Backend tetap menggunakan Google Apps Script sebagai API.
+
+Setelah deployment, frontend hanya perlu dikonfigurasikan agar menggunakan URL Google Apps Script yang sesuai.
+
+---
+
+## Development
+
+Project ini masih dapat terus dikembangkan.
+
+Beberapa kemungkinan pengembangan di masa depan:
+
+* Penambahan Toram Tools.
+* Member profile.
+* Member search dan filtering.
+* Statistik komunitas.
+* Activity tracking.
+* Guild event management.
+* Member contribution system.
+* Role dan permission management.
+* Dashboard administrator.
+* Improved API security.
+
+---
+
+## Contributing
+
+Kontribusi, improvement, dan ide baru selalu dapat membantu pengembangan Community Hub.
+
+Jika ingin melakukan perubahan pada project:
+
+1. Fork repository.
+2. Buat branch baru.
+3. Lakukan perubahan.
+4. Buat pull request.
+
+---
+
+## Disclaimer
+
+Community Hub adalah project komunitas dan tidak berafiliasi secara resmi dengan **Toram Online** atau pihak pengembang game.
+
+Semua nama, aset, dan informasi yang berkaitan dengan Toram Online tetap merupakan milik pemilik hak terkait.
+
+---
+
+## License
+
+Project ini dibuat untuk kebutuhan komunitas.
+
+Silakan menyesuaikan lisensi repository sesuai dengan kebutuhan project.
